@@ -1,0 +1,7 @@
+# Separate definition root for this project directory
+root = true
+
+[*]
+end_of_line = crlf
+indent_style = space
+indent_size = 4

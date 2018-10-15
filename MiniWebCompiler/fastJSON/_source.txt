@@ -1,0 +1,2 @@
+https://www.codeproject.com/Articles/159450/fastJSON
+v2.1.28 (2018-01-16)
