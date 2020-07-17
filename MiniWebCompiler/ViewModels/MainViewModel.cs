@@ -11,6 +11,8 @@ using MiniWebCompiler.Views;
 using Unclassified.UI;
 using ViewModelKit;
 
+#pragma warning disable IDE0051 // Nicht verwendete private Member entfernen (ViewModelKit command handlers)
+
 namespace MiniWebCompiler.ViewModels
 {
 	public class MainViewModel : ViewModelBase
@@ -91,8 +93,10 @@ namespace MiniWebCompiler.ViewModels
 
 		private void OnAddProject()
 		{
-			var dlg = new OpenFolderDialog();
-			dlg.Title = "Select project root folder";
+			var dlg = new OpenFolderDialog
+			{
+				Title = "Select project root folder"
+			};
 			if (dlg.ShowDialog() == true)
 			{
 				var project = new Project(dlg.SelectedFolder);

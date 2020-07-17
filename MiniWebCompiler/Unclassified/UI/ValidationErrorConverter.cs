@@ -31,7 +31,7 @@ namespace Unclassified.UI
 		/// <returns></returns>
 		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
 		{
-			ReadOnlyObservableCollection<ValidationError> errors = value as ReadOnlyObservableCollection<ValidationError>;
+			var errors = value as ReadOnlyObservableCollection<ValidationError>;
 			if (errors == null)
 			{
 				return value;

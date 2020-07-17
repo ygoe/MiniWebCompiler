@@ -11,17 +11,16 @@ namespace Unclassified.Util
 {
 	public class NamedPipeServer : IDisposable
 	{
-		private string pipeName;
-		private int nextServerId = 1;
-		private Dictionary<int, InternalServer> servers = new Dictionary<int, InternalServer>();
+		private readonly Dictionary<int, InternalServer> servers = new Dictionary<int, InternalServer>();
 		private readonly SynchronizationContext synchronizationContext = AsyncOperationManager.SynchronizationContext;
+		private int nextServerId = 1;
 
 		public NamedPipeServer(string pipeName)
 		{
-			this.pipeName = pipeName;
+			PipeName = pipeName;
 		}
 
-		public string PipeName => pipeName;
+		public string PipeName { get; }
 
 		public event EventHandler<NamedPipeServerConnectedEventArgs> Connected;
 
@@ -54,7 +53,7 @@ namespace Unclassified.Util
 
 		private void StartServer()
 		{
-			var server = new InternalServer(nextServerId, pipeName);
+			var server = new InternalServer(nextServerId, PipeName);
 			servers.Add(nextServerId, server);
 			server.Connected += OnConnected;
 			server.Message += OnMessage;
@@ -91,11 +90,11 @@ namespace Unclassified.Util
 
 		private class InternalServer : IDisposable, INamedPipeResponder
 		{
-			private int id;
-			private string pipeName;
+			private readonly int id;
+			private readonly string pipeName;
+			private readonly byte[] buffer = new byte[4096];
+			private readonly StringBuilder messageBuilder = new StringBuilder();
 			private NamedPipeServerStream serverStream;
-			private byte[] buffer = new byte[4096];
-			private StringBuilder messageBuilder = new StringBuilder();
 			private bool isDisposed;
 
 			public InternalServer(int id, string pipeName)
@@ -146,7 +145,7 @@ namespace Unclassified.Util
 				if (!serverStream.IsConnected)
 					throw new InvalidOperationException("The server is not connected.");
 
-				var sendBuffer = Encoding.UTF8.GetBytes(message);
+				byte[] sendBuffer = Encoding.UTF8.GetBytes(message);
 				await Task.Factory.FromAsync(serverStream.BeginWrite, serverStream.EndWrite, sendBuffer, 0, sendBuffer.Length, null);
 				serverStream.Flush();
 			}
@@ -214,7 +213,7 @@ namespace Unclassified.Util
 
 	public class NamedPipeServerMessageEventArgs : EventArgs
 	{
-		private NamedPipeServer.INamedPipeResponder responder;
+		private readonly NamedPipeServer.INamedPipeResponder responder;
 
 		public NamedPipeServerMessageEventArgs(NamedPipeServer.INamedPipeResponder responder)
 		{

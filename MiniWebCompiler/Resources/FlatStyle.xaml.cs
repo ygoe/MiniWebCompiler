@@ -8,7 +8,7 @@ namespace LicenseManager.Resources
 	/// <summary>
 	/// Implements a modern flat UI style that works consistently across all Windows platforms.
 	/// </summary>
-	partial class FlatStyle : ResourceDictionary
+	public partial class FlatStyle : ResourceDictionary
 	{
 		/// <summary>
 		/// Initialises a new instance of the <see cref="FlatStyle"/> class.
@@ -28,19 +28,16 @@ namespace LicenseManager.Resources
 		{
 			// WARNING: This method is unfinished! See NOTE comments below.
 
-			Popup p = sender as Popup;
-			if (p != null)
+			if (sender is Popup p)
 			{
-				ComboBox cmb = p.TemplatedParent as ComboBox;
-				if (cmb != null)
+				if (p.TemplatedParent is ComboBox cmb)
 				{
 					object o = p.FindName("PopupItems");
-					StackPanel popupItems = o as StackPanel;
-					if (popupItems != null &&
+					if (o is StackPanel popupItems &&
 						cmb.SelectedIndex >= 0 &&
 						popupItems.Children[cmb.SelectedIndex] is ComboBoxItem)
 					{
-						ComboBoxItem cbi = popupItems.Children[cmb.SelectedIndex] as ComboBoxItem;
+						var cbi = popupItems.Children[cmb.SelectedIndex] as ComboBoxItem;
 						double itemHeight = cbi.ActualHeight;
 						double desiredOffset = -itemHeight * (cmb.SelectedIndex + 1) - 2;
 						p.VerticalOffset = desiredOffset;
@@ -53,25 +50,24 @@ namespace LicenseManager.Resources
 						// Eat the first mouse release event. A list item is moved directly under
 						// the mouse cursor and it doesn't check whether the mouse has been
 						// pressed on it before reacting on the release event and closing the popup.
-						cbi.PreviewMouseUp += cbi_PreviewMouseUp;
+						cbi.PreviewMouseUp += Cbi_PreviewMouseUp;
 
 						// Ensure the event eater disappears when the popup is closed for a different reason
-						p.Closed += delegate(object sender2, EventArgs args2)
+						p.Closed += delegate (object sender2, EventArgs args2)
 						{
-							cbi.PreviewMouseUp -= cbi_PreviewMouseUp;
+							cbi.PreviewMouseUp -= Cbi_PreviewMouseUp;
 						};
 					}
 				}
 			}
 		}
 
-		private void cbi_PreviewMouseUp(object sender, System.Windows.Input.MouseButtonEventArgs args)
+		private void Cbi_PreviewMouseUp(object sender, System.Windows.Input.MouseButtonEventArgs args)
 		{
-			ComboBoxItem cbi = sender as ComboBoxItem;
-			if (cbi != null)
+			if (sender is ComboBoxItem cbi)
 			{
 				args.Handled = true;
-				cbi.PreviewMouseUp -= cbi_PreviewMouseUp;
+				cbi.PreviewMouseUp -= Cbi_PreviewMouseUp;
 			}
 		}
 	}

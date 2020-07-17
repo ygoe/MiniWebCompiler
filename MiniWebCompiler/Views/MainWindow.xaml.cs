@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Windows;
 using MiniWebCompiler.ViewModels;
 using Unclassified.Util;
@@ -10,9 +9,9 @@ namespace MiniWebCompiler.Views
 	{
 		public static MainWindow Instance { get; private set; }
 
-		private System.Windows.Forms.NotifyIcon notifyIcon;
-		private System.Drawing.Icon notifyNormalIcon;
-		private System.Drawing.Icon notifyWorkingIcon;
+		private readonly System.Windows.Forms.NotifyIcon notifyIcon;
+		private readonly System.Drawing.Icon notifyNormalIcon;
+		private readonly System.Drawing.Icon notifyWorkingIcon;
 
 		#region Constructor
 
@@ -32,9 +31,9 @@ namespace MiniWebCompiler.Views
 			notifyWorkingIcon = new System.Drawing.Icon(iconStream);
 
 			notifyIcon = new System.Windows.Forms.NotifyIcon();
-			notifyIcon.Icon = notifyNormalIcon;
 			notifyIcon.MouseClick += NotifyIcon_MouseClick;
 			notifyIcon.BalloonTipClicked += NotifyIcon_BalloonTipClicked;
+			notifyIcon.Icon = notifyNormalIcon;
 			notifyIcon.Text = App.Name;
 			notifyIcon.Visible = true;
 		}

@@ -1,8 +1,8 @@
 ﻿<Window
-	x:Class="MiniWebCompiler.Views.MainWindow"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:vm="clr-namespace:MiniWebCompiler.ViewModels"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	x:Class="MiniWebCompiler.Views.MainWindow"
 	Title="Mini Web Compiler"
 	Height="300" Width="800"
 	DataContextChanged="Window_DataContextChanged"
@@ -62,8 +62,12 @@
 				</ListBox.ItemTemplate>
 			</ListBox>
 			<StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,6,0,0">
-				<Button MinWidth="30" Command="{Binding AddProjectCommand}">+</Button>
-				<Button Margin="6,0,0,0" MinWidth="30" Command="{Binding RemoveProjectCommand}">−</Button>
+				<Button MinWidth="30" Command="{Binding AddProjectCommand}">
+					<Path Margin="0,3" Width="10" Height="10" Fill="Black" Data="M4,0 L6,0 6,4 10,4 10,6 6,6 6,10 4,10 4,6 0,6 0,4 4,4 z"/>
+				</Button>
+				<Button Margin="6,0,0,0" MinWidth="30" Command="{Binding RemoveProjectCommand}">
+					<Path Margin="0,3" Width="10" Height="10" Fill="Black" Data="M0,4 L10,4 10,6 0,6 z"/>
+				</Button>
 			</StackPanel>
 		</Grid>
 
@@ -136,8 +140,12 @@
 				</ListBox.ItemTemplate>
 			</ListBox>
 			<StackPanel Grid.Row="8" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,6,0,0">
-				<Button MinWidth="30" IsEnabled="{Binding IsProjectSelected}" Command="{Binding SelectedProject.AddFileCommand}">+</Button>
-				<Button Margin="6,0,0,0" MinWidth="30" IsEnabled="{Binding IsProjectSelected}" Command="{Binding SelectedProject.RemoveFileCommand}">−</Button>
+				<Button MinWidth="30" IsEnabled="{Binding IsProjectSelected}" Command="{Binding SelectedProject.AddFileCommand}">
+					<Path Margin="0,3" Width="10" Height="10" Fill="Black" Data="M4,0 L6,0 6,4 10,4 10,6 6,6 6,10 4,10 4,6 0,6 0,4 4,4 z"/>
+				</Button>
+				<Button Margin="6,0,0,0" MinWidth="30" IsEnabled="{Binding IsProjectSelected}" Command="{Binding SelectedProject.RemoveFileCommand}">
+					<Path Margin="0,3" Width="10" Height="10" Fill="Black" Data="M0,4 L10,4 10,6 0,6 z"/>
+				</Button>
 				<Button Margin="6,0,0,0" MinWidth="75" IsEnabled="{Binding IsProjectSelected}" Command="{Binding SelectedProject.CompileAllCommand}">Compile all</Button>
 			</StackPanel>
 		</Grid>

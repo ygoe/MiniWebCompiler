@@ -16,11 +16,11 @@ namespace MiniWebCompiler.ViewModels
 	{
 		#region Private data
 
-		private DelayedCall compileDc;
+		private readonly DelayedCall compileDc;
+		private readonly Dictionary<string, FileTimeInfo> fileTimes = new Dictionary<string, FileTimeInfo>();
 		private bool newError;
 		private string fullFileName;
 		private string fileDir;
-		private Dictionary<string, FileTimeInfo> fileTimes = new Dictionary<string, FileTimeInfo>();
 		private bool isAnyFileModified;
 
 		#endregion Private data
@@ -30,7 +30,7 @@ namespace MiniWebCompiler.ViewModels
 		public ProjectFile(Project project)
 		{
 			Project = project;
-			compileDc = DelayedCall.Create(async () => await Compile(true), 200);
+			compileDc = DelayedCall.Create(async () => await Compile(true), 500);
 		}
 
 		#endregion Constructor
@@ -72,6 +72,7 @@ namespace MiniWebCompiler.ViewModels
 
 		private async void OnCompile()
 		{
+			Status = null;
 			await Compile(true);
 		}
 
@@ -288,7 +289,7 @@ namespace MiniWebCompiler.ViewModels
 			{
 				if (transpile)
 				{
-					string presets = "";
+					string presets;
 					string presetDir = Path.Combine(App.AppDir, "node_modules");
 					if (!Directory.Exists(presetDir))
 					{
@@ -647,8 +648,10 @@ namespace MiniWebCompiler.ViewModels
 		{
 			if (File.Exists(Path.Combine(fileDir, fileName)))
 			{
-				var info = new FileTimeInfo();
-				info.LastWriteTimeUtc = File.GetLastWriteTimeUtc(Path.Combine(fileDir, fileName));
+				var info = new FileTimeInfo
+				{
+					LastWriteTimeUtc = File.GetLastWriteTimeUtc(Path.Combine(fileDir, fileName))
+				};
 				var sha = SHA256.Create();
 				using (var fileStream = File.OpenRead(Path.Combine(fileDir, fileName)))
 				{

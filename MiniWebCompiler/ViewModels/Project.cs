@@ -11,6 +11,8 @@ using Unclassified.UI;
 using Unclassified.Util;
 using ViewModelKit;
 
+#pragma warning disable IDE0051 // Nicht verwendete private Member entfernen (ViewModelKit command handlers)
+
 namespace MiniWebCompiler.ViewModels
 {
 	public class Project : ViewModelBase
@@ -19,9 +21,9 @@ namespace MiniWebCompiler.ViewModels
 
 		public const string ProjectFileName = "miniwebcompiler.json";
 
-		private bool isLoaded;
+		private readonly bool isLoaded;
+		private readonly DispatcherTimer updateTimeTimer;
 		private FileSystemWatcher watcher;
-		private DispatcherTimer updateTimeTimer;
 
 		#endregion Private data
 
@@ -35,8 +37,8 @@ namespace MiniWebCompiler.ViewModels
 			isLoaded = true;
 
 			updateTimeTimer = new DispatcherTimer();
-			updateTimeTimer.Interval = TimeSpan.FromSeconds(5);
 			updateTimeTimer.Tick += UpdateTimeTimerOnTick;
+			updateTimeTimer.Interval = TimeSpan.FromSeconds(5);
 			updateTimeTimer.Start();
 
 			InitializeAsync();
@@ -76,10 +78,10 @@ namespace MiniWebCompiler.ViewModels
 			if (Directory.Exists(ProjectPath))
 			{
 				watcher = new FileSystemWatcher(ProjectPath);
-				watcher.IncludeSubdirectories = true;
 				watcher.Changed += Watcher_Changed;
 				watcher.Created += Watcher_Changed;
 				watcher.Renamed += Watcher_Changed;
+				watcher.IncludeSubdirectories = true;
 				watcher.EnableRaisingEvents = true;
 			}
 		}
@@ -163,8 +165,10 @@ namespace MiniWebCompiler.ViewModels
 			{
 				foreach (string fileName in dlg.FileNames)
 				{
-					var file = new ProjectFile(this);
-					file.FilePath = PathUtil.GetRelativePath(fileName, ProjectPath, false);
+					var file = new ProjectFile(this)
+					{
+						FilePath = PathUtil.GetRelativePath(fileName, ProjectPath, false)
+					};
 					Files.Add(file);
 					file.PropertyChanged += File_PropertyChanged;
 					SelectedFile = file;
@@ -280,8 +284,10 @@ namespace MiniWebCompiler.ViewModels
 								}
 								else
 								{
-									var file = new ProjectFile(this);
-									file.FilePath = line;
+									var file = new ProjectFile(this)
+									{
+										FilePath = line
+									};
 									Files.Add(file);
 									file.PropertyChanged += File_PropertyChanged;
 								}
@@ -301,8 +307,10 @@ namespace MiniWebCompiler.ViewModels
 							KeepIntermediaryFiles = configFile.KeepIntermediaryFiles;
 							foreach (var fileEntry in configFile.Files)
 							{
-								var file = new ProjectFile(this);
-								file.FilePath = fileEntry.Name.Replace('/', Path.DirectorySeparatorChar);
+								var file = new ProjectFile(this)
+								{
+									FilePath = fileEntry.Name.Replace('/', Path.DirectorySeparatorChar)
+								};
 								Files.Add(file);
 								file.PropertyChanged += File_PropertyChanged;
 							}

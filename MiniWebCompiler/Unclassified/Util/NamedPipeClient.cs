@@ -10,12 +10,12 @@ namespace Unclassified.Util
 {
 	public class NamedPipeClient : IDisposable
 	{
-		private string pipeName;
-		private NamedPipeClientStream clientStream;
-		private byte[] buffer = new byte[4096];
-		private StringBuilder messageBuilder = new StringBuilder();
-		private bool isDisposed;
+		private readonly string pipeName;
+		private readonly byte[] buffer = new byte[4096];
+		private readonly StringBuilder messageBuilder = new StringBuilder();
 		private readonly SynchronizationContext synchronizationContext = AsyncOperationManager.SynchronizationContext;
+		private NamedPipeClientStream clientStream;
+		private bool isDisposed;
 
 		public NamedPipeClient(string pipeName, int timeout = Timeout.Infinite)
 		{
@@ -59,7 +59,7 @@ namespace Unclassified.Util
 			if (!clientStream.IsConnected)
 				throw new InvalidOperationException("The client is not connected.");
 
-			var sendBuffer = Encoding.UTF8.GetBytes(message);
+			byte[] sendBuffer = Encoding.UTF8.GetBytes(message);
 			await Task.Factory.FromAsync(clientStream.BeginWrite, clientStream.EndWrite, sendBuffer, 0, sendBuffer.Length, null);
 			clientStream.Flush();
 		}
@@ -85,14 +85,14 @@ namespace Unclassified.Util
 				throw new InvalidOperationException("The client is not connected.");
 
 			var tcs = new TaskCompletionSource<string>();
-			void messageHandler(object sender, NamedPipeClientMessageEventArgs args)
+			void MessageHandler(object sender, NamedPipeClientMessageEventArgs args)
 			{
 				tcs.SetResult(args.Message);
 			}
-			Message += messageHandler;
+			Message += MessageHandler;
 			try
 			{
-				var sendBuffer = Encoding.UTF8.GetBytes(message);
+				byte[] sendBuffer = Encoding.UTF8.GetBytes(message);
 				await Task.Factory.FromAsync(clientStream.BeginWrite, clientStream.EndWrite, sendBuffer, 0, sendBuffer.Length, null);
 				clientStream.Flush();
 				var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(timeout));
@@ -103,7 +103,7 @@ namespace Unclassified.Util
 			}
 			finally
 			{
-				Message -= messageHandler;
+				Message -= MessageHandler;
 			}
 		}
 
@@ -155,7 +155,7 @@ namespace Unclassified.Util
 
 	public class NamedPipeClientMessageEventArgs : EventArgs
 	{
-		private NamedPipeClient client;
+		private readonly NamedPipeClient client;
 
 		public NamedPipeClientMessageEventArgs(NamedPipeClient client)
 		{

@@ -49,7 +49,7 @@ namespace Unclassified.Util
 
 		#region Private data
 
-		private Mutex mutex;
+		private readonly Mutex mutex;
 		private Thread ownerThread;
 		private bool hasHandle;
 		private bool isDisposed;
@@ -73,9 +73,8 @@ namespace Unclassified.Util
 			var securitySettings = new MutexSecurity();
 			securitySettings.AddAccessRule(allowEveryoneRule);
 
-			bool createdNew;
 			// Use the Global prefix to make it a system-wide object
-			mutex = new Mutex(false, @"Global\" + name, out createdNew, securitySettings);
+			mutex = new Mutex(false, @"Global\" + name, out _, securitySettings);
 		}
 
 		#endregion Constructors
