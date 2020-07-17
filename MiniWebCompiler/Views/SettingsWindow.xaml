@@ -30,6 +30,6 @@
 
 		<CheckBox Grid.Row="4" Margin="0,2,0,0" IsChecked="{Binding Settings.KeepUnminifiedFilesDefault}" Content="Keep unminified files default"/>
 
-		<Button Grid.Row="5" Margin="0,10,0,0" HorizontalAlignment="Right" MinWidth="75" Content="Close" Click="CloseButton_Click"/>
+		<Button Grid.Row="5" Margin="0,20,0,0" HorizontalAlignment="Right" MinWidth="75" Content="Close" Click="CloseButton_Click"/>
 	</Grid>
 </Window>

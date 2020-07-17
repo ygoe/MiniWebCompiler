@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using fastJSON;
 using Unclassified.Util;
 using ViewModelKit;
 
@@ -174,6 +175,7 @@ namespace MiniWebCompiler.ViewModels
 			await ExecAsync(
 				"csso \"" + cssFileName + "\" \"" + minCssFileName + "\" --map \"" + minCssFileName + ".map\"",
 				fileDir);
+			PostprocessMapFile(minCssFileName + ".map");
 
 			if (Status != false)
 			{
@@ -323,6 +325,7 @@ namespace MiniWebCompiler.ViewModels
 					await ExecAsync(
 						"uglifyjs " + es5FileName + " --compress --mangle --output \"" + minFileName + "\" --comments=\"/^!/\" " + mapParam,
 						fileDir);
+					PostprocessMapFile(minFileName + ".map");
 
 					// TODO: Issues with babel + uglify:
 					// * Banner/license comment is either not preserved or duplicated (depending on using rollup option --banner)
@@ -388,6 +391,7 @@ namespace MiniWebCompiler.ViewModels
 				await ExecAsync(
 					"csso \"" + cssFileName + "\" \"" + minCssFileName + "\" --map \"" + minCssFileName + ".map\"",
 					fileDir);
+				PostprocessMapFile(minCssFileName + ".map");
 			}
 			if (Status != false)
 			{
@@ -410,6 +414,41 @@ namespace MiniWebCompiler.ViewModels
 				//	"7za a -tgzip \"" + minCssFileName + ".gz\" \"" + minCssFileName + "\" >nul",
 				//	Path.GetDirectoryName(fileName));
 			}
+		}
+
+		private void PostprocessMapFile(string mapFileName)
+		{
+			// Read map file
+			string fileName = Path.Combine(fileDir, mapFileName);
+			string json = File.ReadAllText(fileName);
+			if (!(JSON.Parse(json) is Dictionary<string, object> dict))
+				return;   // Unexpected JSON structure
+
+			// Convert absolute paths to relative paths
+			if (dict["sources"] is List<object> sources)
+			{
+				for (int i = 0; i < sources.Count; i++)
+				{
+					if (sources[i] is string source &&
+						Path.IsPathRooted(source))
+					{
+						sources[i] = PathUtil.GetRelativePath(source, fileDir);
+					}
+				}
+			}
+			if (dict.TryGetValue("file", out object fileValue) &&
+				fileValue is string fileStr &&
+				Path.IsPathRooted(fileStr))
+			{
+				dict["file"] = PathUtil.GetRelativePath(fileStr, fileDir);
+			}
+
+			// Remove sources from map file
+			dict.Remove("sourcesContent");
+
+			// Write back file
+			json = JSON.ToJSON(dict);
+			File.WriteAllText(fileName, json);
 		}
 
 		#endregion Compiling
