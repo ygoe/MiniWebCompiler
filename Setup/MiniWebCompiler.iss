@@ -62,7 +62,7 @@ Source: "{#AppData}\npm\rollup.cmd"; DestDir: "{app}"; Flags: ignoreversion crea
 Source: "{#AppData}\npm\node_modules\rollup\*"; DestDir: "{app}\node_modules\rollup"; Flags: ignoreversion createallsubdirs recursesubdirs
 
 Source: "{#AppData}\npm\uglifyjs.cmd"; DestDir: "{app}"; Flags: ignoreversion createallsubdirs recursesubdirs
-Source: "{#AppData}\npm\node_modules\uglify-es\*"; DestDir: "{app}\node_modules\uglify-es"; Flags: ignoreversion createallsubdirs recursesubdirs
+Source: "{#AppData}\npm\node_modules\uglify-js\*"; DestDir: "{app}\node_modules\uglify-js"; Flags: ignoreversion createallsubdirs recursesubdirs
 
 [Icons]
 Name: "{userprograms}\Mini Web Compiler"; Filename: "{app}\MiniWebCompiler.exe"; WorkingDir: "{app}"; IconFilename: "{app}\MiniWebCompiler.exe"; IconIndex: 0

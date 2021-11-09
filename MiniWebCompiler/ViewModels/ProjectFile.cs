@@ -174,7 +174,7 @@ namespace MiniWebCompiler.ViewModels
 			LastLog = "";
 
 			await ExecAsync(
-				"csso \"" + cssFileName + "\" \"" + minCssFileName + "\" --map \"" + minCssFileName + ".map\"",
+				"csso \"" + cssFileName + "\" --output \"" + minCssFileName + "\" --source-map \"" + minCssFileName + ".map\"",
 				fileDir);
 			PostprocessMapFile(minCssFileName + ".map");
 
@@ -324,7 +324,7 @@ namespace MiniWebCompiler.ViewModels
 						mapParam = "--source-map \"content='" + es5FileName + ".map',url='" + minFileName + ".map'\"";
 					}
 					await ExecAsync(
-						"uglifyjs " + es5FileName + " --compress --mangle --output \"" + minFileName + "\" --comments=\"/^!/\" " + mapParam,
+						"uglifyjs " + es5FileName + " --compress --mangle --output \"" + minFileName + "\" --comments \"/^!/\" " + mapParam,
 						fileDir);
 					PostprocessMapFile(minFileName + ".map");
 
@@ -390,7 +390,7 @@ namespace MiniWebCompiler.ViewModels
 			if (Status != false)
 			{
 				await ExecAsync(
-					"csso \"" + cssFileName + "\" \"" + minCssFileName + "\" --map \"" + minCssFileName + ".map\"",
+					"csso \"" + cssFileName + "\" --output \"" + minCssFileName + "\" --source-map \"" + minCssFileName + ".map\"",
 					fileDir);
 				PostprocessMapFile(minCssFileName + ".map");
 			}
