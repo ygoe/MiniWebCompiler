@@ -261,8 +261,7 @@ namespace MiniWebCompiler.ViewModels
 					string[] lines = File.ReadAllLines(Path.Combine(fileDir, bundleFileName));
 					for (int i = 0; i < 3; i++)
 					{
-						var match = Regex.Match(lines[i], @"^\(function \(\) \{\s*$");
-						if (match.Success)
+						if (Regex.IsMatch(lines[i], @"^\(function \(\) \{\s*$"))
 						{
 							lines[i] = lines[i].Replace("()", "(" + iifeParams + ")");
 							break;
@@ -270,8 +269,8 @@ namespace MiniWebCompiler.ViewModels
 					}
 					for (int i = lines.Length - 1; i > lines.Length - 4; i--)
 					{
-						var match = Regex.Match(lines[i], @"^\}\(\)\);\s*$");
-						if (match.Success)
+						if (Regex.IsMatch(lines[i], @"^\}\(\)\);\s*$") ||
+							Regex.IsMatch(lines[i], @"^\}\)\(\);\s*$"))
 						{
 							lines[i] = lines[i].Replace("()", "(" + iifeArgs + ")");
 							break;
