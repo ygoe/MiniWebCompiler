@@ -109,7 +109,8 @@
 				BorderThickness="0"
 				HorizontalContentAlignment="Stretch"
 				ItemsSource="{Binding SelectedProject.Files}"
-				SelectedItem="{Binding SelectedProject.SelectedFile}">
+				SelectedItem="{Binding SelectedProject.SelectedFile}"
+				Grid.IsSharedSizeScope="True">
 				<ListBox.ItemTemplate>
 					<DataTemplate>
 						<Grid>
@@ -117,6 +118,7 @@
 								<ColumnDefinition Width="Auto"/>
 								<ColumnDefinition Width="*"/>
 								<ColumnDefinition Width="Auto"/>
+								<ColumnDefinition Width="Auto" SharedSizeGroup="Size"/>
 							</Grid.ColumnDefinitions>
 							<Ellipse Width="10" Height="10" VerticalAlignment="Center">
 								<Ellipse.Style>
@@ -134,7 +136,8 @@
 								</Ellipse.Style>
 							</Ellipse>
 							<TextBlock Grid.Column="1" Margin="6,0,0,0" Text="{Binding FilePath}"/>
-							<TextBlock Grid.Column="2" Margin="6,0,0,0" Text="{Binding LastCompileTimeStr}" Opacity="0.6"/>
+							<TextBlock Grid.Column="2" Margin="10,0,0,0" Text="{Binding LastCompileTimeStr}" Opacity="0.6" ToolTip="Last compile time"/>
+							<TextBlock Grid.Column="3" Margin="10,0,0,0" Text="{Binding CompressedResultSizeStr}" Opacity="0.6" ToolTip="GZip-compressed file size"/>
 						</Grid>
 					</DataTemplate>
 				</ListBox.ItemTemplate>

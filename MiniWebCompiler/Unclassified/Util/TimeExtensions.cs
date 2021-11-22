@@ -18,10 +18,10 @@ namespace Unclassified.Util
 			var words = new Dictionary<string, string>
 			{
 				{ "joiner", " " },
-				{ "second", "second" },
-				{ "seconds", "seconds" },
-				{ "minute", "minute" },
-				{ "minutes", "minutes" },
+				{ "second", "sec" },
+				{ "seconds", "sec" },
+				{ "minute", "min" },
+				{ "minutes", "min" },
 				{ "hour", "hour" },
 				{ "hours", "hours" },
 				{ "day", "day" },
@@ -53,7 +53,7 @@ namespace Unclassified.Util
 				return word(secs / minute, "minute") + words["joiner"] + word(secs % minute, "second");
 			if (secs < hour)
 				return word(secs / minute, "minute");
-			if (secs < 12 * hour)
+			if (secs < 6 * hour)
 				return word(secs / hour, "hour") + words["joiner"] + word(secs % hour / minute, "minute");
 			if (secs < day)
 				return word(secs / hour, "hour");
@@ -61,11 +61,13 @@ namespace Unclassified.Util
 				return word(secs / day, "day") + words["joiner"] + word(secs % day / hour, "hour");
 			if (secs < week)
 				return word(secs / day, "day");
-			if (secs < 2 * month)
+			if (secs < 3 * week)
 				return word(secs / week, "week") + words["joiner"] + word(secs % week / day, "day");
+			if (secs < 2 * month)
+				return word(secs / week, "week");
 			if (secs < year)
 				return word(secs / month, "month");
-			if (secs < 3 * year)
+			if (secs < 2 * year)
 				return word(secs / year, "year") + words["joiner"] + word(secs % year / month, "month");
 			return word(secs / year, "year");
 		}

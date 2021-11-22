@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
@@ -62,6 +63,26 @@ namespace MiniWebCompiler.ViewModels
 		public void RaiseLastCompileTimeStrChanged()
 		{
 			OnPropertyChanged(nameof(LastCompileTimeStr));
+		}
+
+		public long CompressedResultSize { get; private set; }
+
+		public string CompressedResultSizeStr
+		{
+			get
+			{
+				if (CompressedResultSize < 0)
+					return "";
+				if (CompressedResultSize < 1024)
+					return $"{CompressedResultSize} B";
+				if (CompressedResultSize < 1024 * 10)
+					return $"{(double)CompressedResultSize / 1024:0.0} KiB";
+				if (CompressedResultSize < 1024 * 1024)
+					return $"{(double)CompressedResultSize / 1024} KiB";
+				if (CompressedResultSize < 1024 * 1024 * 10)
+					return $"{(double)CompressedResultSize / 1024 / 1024:0.0} MiB";
+				return $"{(double)CompressedResultSize / 1024 / 1024} MiB";
+			}
 		}
 
 		#endregion Properties
@@ -126,7 +147,8 @@ namespace MiniWebCompiler.ViewModels
 						default:
 							newError = true;
 							Status = false;
-							LastLog = "Unsupported file type: " + fullFileName;
+							LastLog += (!string.IsNullOrEmpty(LastLog) ? "\n\n" : "") +
+								"Unsupported file type: " + fullFileName;
 							break;
 					}
 				}
@@ -134,14 +156,16 @@ namespace MiniWebCompiler.ViewModels
 				{
 					newError = true;
 					Status = false;
-					LastLog = "Exception while compiling\n\n" + ex.ToString();
+					LastLog += (!string.IsNullOrEmpty(LastLog) ? "\n\n" : "") +
+						"Exception while compiling\n\n" + ex.ToString();
 				}
 			}
 			else
 			{
 				newError = true;
 				Status = false;
-				LastLog = "Project source file not found: " + fullFileName;
+				LastLog += (!string.IsNullOrEmpty(LastLog) ? "\n\n" : "") +
+					"Project source file not found: " + fullFileName;
 			}
 
 			if (Status != false)
@@ -162,8 +186,33 @@ namespace MiniWebCompiler.ViewModels
 			string cssFileName = Path.GetFileName(fullFileName);
 			string minCssFileName = Path.GetFileNameWithoutExtension(fullFileName) + ".min.css";
 
+			string buildDir = "";
+			using (var reader = new StreamReader(fullFileName))
+			{
+				int lineNumber = 0;
+				while (!reader.EndOfStream && lineNumber < 10)
+				{
+					string line = reader.ReadLine();
+					lineNumber++;
+					var match = Regex.Match(line, @"^\s*/\*\s*build-dir\((.*)\)\s*\*/", RegexOptions.IgnoreCase);
+					if (match.Success && buildDir == "")
+					{
+						buildDir = match.Groups[1].Value.Trim().Replace('/', '\\');
+						if (buildDir != "" && !buildDir.EndsWith("\\"))
+							buildDir += "\\";
+						if (buildDir != "")
+						{
+							minCssFileName = Path.Combine(buildDir, minCssFileName);
+
+							Directory.CreateDirectory(Path.Combine(fileDir, buildDir));
+						}
+					}
+				}
+			}
+
 			if (!force && AreFilesUpToDate(minCssFileName, minCssFileName + ".map"))
 			{
+				SetCompressedResultSize(Path.Combine(fileDir, minCssFileName));
 				return;
 			}
 			if (!force) Status = null;
@@ -172,6 +221,7 @@ namespace MiniWebCompiler.ViewModels
 			SaveResultFileTime(minCssFileName);
 			SaveResultFileTime(minCssFileName + ".map");
 			LastLog = "";
+			CompressedResultSize = -1;
 
 			await ExecAsync(
 				"csso \"" + cssFileName + "\" --output \"" + minCssFileName + "\" --source-map \"" + minCssFileName + ".map\"",
@@ -192,6 +242,7 @@ namespace MiniWebCompiler.ViewModels
 				//await ExecAsync(
 				//	"7za a -tgzip \"" + minCssFileName + ".gz\" \"" + minCssFileName + "\" >nul",
 				//	Path.GetDirectoryName(fileName));
+				SetCompressedResultSize(Path.Combine(fileDir, minCssFileName));
 			}
 		}
 
@@ -202,22 +253,12 @@ namespace MiniWebCompiler.ViewModels
 			string es5FileName = Path.GetFileNameWithoutExtension(fullFileName) + ".es5.js";
 			string minFileName = Path.GetFileNameWithoutExtension(fullFileName) + ".min.js";
 
-			bool transpile = false;
-
-			if (!force && AreFilesUpToDate(minFileName, minFileName + ".map"))
-			{
-				return;
-			}
-			if (!force) Status = null;
-
-			ClearFileTimes();
-			SaveResultFileTime(minFileName);
-			SaveResultFileTime(minFileName + ".map");
-			LastLog = "";
-
 			string banner = "";
+			bool transpile = false;
 			string iifeParams = "";
 			string iifeArgs = "";
+			bool noIife = false;
+			string buildDir = "";
 			using (var reader = new StreamReader(fullFileName))
 			{
 				int lineNumber = 0;
@@ -246,14 +287,51 @@ namespace MiniWebCompiler.ViewModels
 					{
 						iifeArgs = match.Groups[1].Value;
 					}
+					match = Regex.Match(line, @"^\s*/\*\s*no-iife\s*\*/", RegexOptions.IgnoreCase);
+					if (match.Success)
+					{
+						noIife = true;
+					}
+					match = Regex.Match(line, @"^\s*/\*\s*build-dir\((.*)\)\s*\*/", RegexOptions.IgnoreCase);
+					if (match.Success && buildDir == "")
+					{
+						buildDir = match.Groups[1].Value.Trim().Replace('/', '\\');
+						if (buildDir != "" && !buildDir.EndsWith("\\"))
+							buildDir += "\\";
+						if (buildDir != "")
+						{
+							bundleFileName = Path.Combine(buildDir, bundleFileName);
+							es5FileName = Path.Combine(buildDir, es5FileName);
+							minFileName = Path.Combine(buildDir, minFileName);
+
+							Directory.CreateDirectory(Path.Combine(fileDir, buildDir));
+						}
+					}
 				}
 			}
 
+			if (!force && AreFilesUpToDate(minFileName, minFileName + ".map"))
+			{
+				SetCompressedResultSize(Path.Combine(fileDir, minFileName));
+				return;
+			}
+			if (!force) Status = null;
+
+			ClearFileTimes();
+			SaveResultFileTime(minFileName);
+			SaveResultFileTime(minFileName + ".map");
+			LastLog = "";
+
 			if (AdditionalSourceFiles.Any())
 			{
+				Environment.SetEnvironmentVariable("NO_COLOR", "1", EnvironmentVariableTarget.Process);
+				string formatArg = "";
+				if (!noIife)
+					formatArg = " -f iife";
 				await ExecAsync(
-					"rollup \"" + srcFileName + "\" -o \"" + bundleFileName + "\" -f iife -m" + banner,
-					fileDir);
+					"rollup \"" + srcFileName + "\" -o \"" + bundleFileName + "\"" + formatArg + " -m" + banner,
+					fileDir,
+					utf8: true);
 
 				if ((iifeParams != "" || iifeArgs != "") &&
 					File.Exists(Path.Combine(fileDir, bundleFileName)))
@@ -320,7 +398,7 @@ namespace MiniWebCompiler.ViewModels
 					string mapParam = "--source-map \"url='" + minFileName + ".map'\"";
 					if (File.Exists(Path.Combine(fileDir, es5FileName) + ".map"))
 					{
-						mapParam = "--source-map \"content='" + es5FileName + ".map',url='" + minFileName + ".map'\"";
+						mapParam = "--source-map \"content='" + es5FileName.Replace('\\', '/') + ".map',url='" + minFileName.Replace('\\', '/') + ".map'\"";
 					}
 					await ExecAsync(
 						"uglifyjs " + es5FileName + " --compress --mangle --output \"" + minFileName + "\" --comments \"/^!/\" " + mapParam,
@@ -362,6 +440,7 @@ namespace MiniWebCompiler.ViewModels
 				//await ExecAsync(
 				//	"7za a -tgzip \"" + minFileName + ".gz\" \"" + minFileName + "\" >nul",
 				//	Path.GetDirectoryName(fileName));
+				SetCompressedResultSize(Path.Combine(fileDir, minFileName));
 			}
 		}
 
@@ -371,8 +450,34 @@ namespace MiniWebCompiler.ViewModels
 			string cssFileName = Path.GetFileNameWithoutExtension(fullFileName) + ".css";
 			string minCssFileName = Path.GetFileNameWithoutExtension(fullFileName) + ".min.css";
 
+			string buildDir = "";
+			using (var reader = new StreamReader(fullFileName))
+			{
+				int lineNumber = 0;
+				while (!reader.EndOfStream && lineNumber < 10)
+				{
+					string line = reader.ReadLine();
+					lineNumber++;
+					var match = Regex.Match(line, @"^\s*/\*\s*build-dir\((.*)\)\s*\*/", RegexOptions.IgnoreCase);
+					if (match.Success && buildDir == "")
+					{
+						buildDir = match.Groups[1].Value.Trim().Replace('/', '\\');
+						if (buildDir != "" && !buildDir.EndsWith("\\"))
+							buildDir += "\\";
+						if (buildDir != "")
+						{
+							cssFileName = Path.Combine(buildDir, cssFileName);
+							minCssFileName = Path.Combine(buildDir, minCssFileName);
+
+							Directory.CreateDirectory(Path.Combine(fileDir, buildDir));
+						}
+					}
+				}
+			}
+
 			if (!force && AreFilesUpToDate(minCssFileName, minCssFileName + ".map"))
 			{
+				SetCompressedResultSize(Path.Combine(fileDir, minCssFileName));
 				return;
 			}
 			if (!force) Status = null;
@@ -413,6 +518,7 @@ namespace MiniWebCompiler.ViewModels
 				//await ExecAsync(
 				//	"7za a -tgzip \"" + minCssFileName + ".gz\" \"" + minCssFileName + "\" >nul",
 				//	Path.GetDirectoryName(fileName));
+				SetCompressedResultSize(Path.Combine(fileDir, minCssFileName));
 			}
 		}
 
@@ -488,7 +594,7 @@ namespace MiniWebCompiler.ViewModels
 			return allUpToDate;
 		}
 
-		private async Task ExecAsync(string cmdline, string directory)
+		private async Task ExecAsync(string cmdline, string directory, bool utf8 = false)
 		{
 			// Try to find the command executable file in the application directory, then use that
 			string[] parts = cmdline.Split(new[] { ' ' }, 2);
@@ -507,6 +613,11 @@ namespace MiniWebCompiler.ViewModels
 				UseShellExecute = false,
 				WorkingDirectory = directory
 			};
+			if (utf8)
+			{
+				psi.StandardOutputEncoding = System.Text.Encoding.UTF8;
+				psi.StandardErrorEncoding = System.Text.Encoding.UTF8;
+			}
 
 			var process = Process.Start(psi);
 			await Task.Run(() => process.WaitForExit(10000));
@@ -523,6 +634,26 @@ namespace MiniWebCompiler.ViewModels
 			{
 				newError = true;
 				Status = false;
+			}
+		}
+
+		private void SetCompressedResultSize(string fileName)
+		{
+			try
+			{
+				using (var ms = new MemoryStream())
+				{
+					using (var fs = File.OpenRead(fileName))
+					using (var gs = new GZipStream(ms, CompressionMode.Compress, leaveOpen: true))
+					{
+						fs.CopyTo(gs);
+					}
+					CompressedResultSize = ms.Length;
+				}
+			}
+			catch (IOException)
+			{
+				CompressedResultSize = -1;
 			}
 		}
 
