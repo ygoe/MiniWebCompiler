@@ -78,10 +78,10 @@ namespace MiniWebCompiler.ViewModels
 				if (CompressedResultSize < 1024 * 10)
 					return $"{(double)CompressedResultSize / 1024:0.0} KiB";
 				if (CompressedResultSize < 1024 * 1024)
-					return $"{(double)CompressedResultSize / 1024} KiB";
+					return $"{(double)CompressedResultSize / 1024:0} KiB";
 				if (CompressedResultSize < 1024 * 1024 * 10)
 					return $"{(double)CompressedResultSize / 1024 / 1024:0.0} MiB";
-				return $"{(double)CompressedResultSize / 1024 / 1024} MiB";
+				return $"{(double)CompressedResultSize / 1024 / 1024:0} MiB";
 			}
 		}
 
@@ -296,6 +296,7 @@ namespace MiniWebCompiler.ViewModels
 					if (match.Success && buildDir == "")
 					{
 						buildDir = match.Groups[1].Value.Trim().Replace('/', '\\');
+						buildDir = Regex.Replace(buildDir, "\\+", "\\");
 						if (buildDir != "" && !buildDir.EndsWith("\\"))
 							buildDir += "\\";
 						if (buildDir != "")
@@ -402,7 +403,17 @@ namespace MiniWebCompiler.ViewModels
 					}
 					await ExecAsync(
 						"uglifyjs " + es5FileName + " --compress --mangle --output \"" + minFileName + "\" --comments \"/^!/\" " + mapParam,
-						fileDir);
+						fileDir,
+						utf8: true);
+
+					if (buildDir != "")
+					{
+						// Remove specified build directory from source map reference or it won't be found
+						string[] lines = File.ReadAllLines(Path.Combine(fileDir, minFileName));
+						lines[lines.Length - 1] = lines[lines.Length - 1].Replace("//# sourceMappingURL=" + buildDir.Replace('\\', '/'), "//# sourceMappingURL=");
+						File.WriteAllLines(Path.Combine(fileDir, minFileName), lines);
+					}
+
 					PostprocessMapFile(minFileName + ".map");
 
 					// TODO: Issues with babel + uglify:

@@ -22,16 +22,16 @@ namespace Unclassified.Util
 				{ "seconds", "sec" },
 				{ "minute", "min" },
 				{ "minutes", "min" },
-				{ "hour", "hour" },
-				{ "hours", "hours" },
-				{ "day", "day" },
-				{ "days", "days" },
-				{ "week", "week" },
-				{ "weeks", "weeks" },
-				{ "month", "month" },
-				{ "months", "months" },
-				{ "year", "year" },
-				{ "years", "years" }
+				{ "hour", "h" },
+				{ "hours", "h" },
+				{ "day", "d" },
+				{ "days", "d" },
+				{ "week", "wk" },
+				{ "weeks", "wk" },
+				{ "month", "mon" },
+				{ "months", "mon" },
+				{ "year", "y" },
+				{ "years", "y" }
 			};
 
 			Func<long, string, string> word = (long number, string key) =>
