@@ -23,6 +23,8 @@ namespace MiniWebCompiler.ViewModels
 		private string fullFileName;
 		private string fileDir;
 		private bool isAnyFileModified;
+		private bool isCompiling;
+		private bool needsRecompile;
 
 		#endregion Private data
 
@@ -101,6 +103,10 @@ namespace MiniWebCompiler.ViewModels
 
 		#region Public methods
 
+		/// <summary>
+		/// </summary>
+		/// <param name="fileName">The changed file path.</param>
+		/// <returns></returns>
 		public bool MatchesFile(string fileName)
 		{
 			if (PathUtil.PathEquals(fileName, Path.Combine(Project.ProjectPath, FilePath)))
@@ -116,12 +122,22 @@ namespace MiniWebCompiler.ViewModels
 
 		public void ScheduleCompile()
 		{
+			Debug.WriteLine("Schedule Compile: " + FilePath);
 			Status = null;
 			compileDc.Reset();
 		}
 
 		public async Task Compile(bool force)
 		{
+			if (isCompiling)
+			{
+				Debug.WriteLine("Already compiling: " + FilePath);
+				needsRecompile = true;
+				return;
+			}
+
+			Debug.WriteLine("Begin Compile: " + FilePath);
+			isCompiling = true;
 			newError = false;
 			fullFileName = Path.Combine(Project.ProjectPath, FilePath);
 			fileDir = Path.GetDirectoryName(fullFileName);
@@ -168,12 +184,23 @@ namespace MiniWebCompiler.ViewModels
 					"Project source file not found: " + fullFileName;
 			}
 
-			if (Status != false)
-				Status = true;
-			if (newError)
+			Debug.WriteLine("End Compile: " + FilePath);
+			isCompiling = false;
+			if (needsRecompile)
 			{
-				MainViewModel.Instance.PlayErrorSound();
-				Views.MainWindow.Instance.SetError(FilePath, LastLog);
+				Debug.WriteLine("Needs Recompile: " + FilePath);
+				needsRecompile = false;
+				ScheduleCompile();
+			}
+			else
+			{
+				if (Status != false)
+					Status = true;
+				if (newError)
+				{
+					MainViewModel.Instance.PlayErrorSound();
+					Views.MainWindow.Instance.SetError(FilePath, LastLog);
+				}
 			}
 		}
 
@@ -227,16 +254,25 @@ namespace MiniWebCompiler.ViewModels
 				"csso \"" + cssFileName + "\" --output \"" + minCssFileName + "\" --source-map \"" + minCssFileName + ".map\"",
 				fileDir);
 			PostprocessMapFile(minCssFileName + ".map");
+			if (needsRecompile) return;   // Abort this run and restart
 
 			if (Status != false)
 			{
 				RestoreResultFileTime(minCssFileName);
 				RestoreResultFileTime(minCssFileName + ".map");
 
+				LastLog += Environment.NewLine + "Compiled files:" + Environment.NewLine;
+				LastLog += "- " + minCssFileName + Environment.NewLine;
+
 				if (isAnyFileModified)
 				{
 					LastCompileTime = DateTime.UtcNow;
 				}
+				else
+				{
+					LastLog += "Note: File content has not changed to previous build." + Environment.NewLine;
+				}
+
 
 				// TODO: Make optional, or better: use GZipStream and only show the size in the UI
 				//await ExecAsync(
@@ -362,6 +398,7 @@ namespace MiniWebCompiler.ViewModels
 			{
 				bundleFileName = srcFileName;
 			}
+			if (needsRecompile) return;   // Abort this run and restart
 
 			if (Status != false)
 			{
@@ -394,6 +431,7 @@ namespace MiniWebCompiler.ViewModels
 				{
 					es5FileName = bundleFileName;
 				}
+				if (needsRecompile) return;   // Abort this run and restart
 
 				{
 					string mapParam = "--source-map \"url='" + minFileName + ".map'\"";
@@ -420,6 +458,8 @@ namespace MiniWebCompiler.ViewModels
 					// * Banner/license comment is either not preserved or duplicated (depending on using rollup option --banner)
 				}
 			}
+			if (needsRecompile) return;   // Abort this run and restart
+
 			if (Status != false)
 			{
 				RestoreResultFileTime(minFileName);
@@ -431,6 +471,7 @@ namespace MiniWebCompiler.ViewModels
 					{
 						File.Delete(Path.Combine(fileDir, bundleFileName));
 						File.Delete(Path.Combine(fileDir, bundleFileName + ".map"));
+						bundleFileName = "";
 					}
 					if (!Project.KeepUnminifiedFiles)
 					{
@@ -438,13 +479,25 @@ namespace MiniWebCompiler.ViewModels
 						{
 							File.Delete(Path.Combine(fileDir, es5FileName));
 							File.Delete(Path.Combine(fileDir, es5FileName + ".map"));
+							es5FileName = "";
 						}
 					}
 				}
 
+				LastLog += Environment.NewLine + "Compiled files:" + Environment.NewLine;
+				if (!string.IsNullOrEmpty(bundleFileName))
+					LastLog += "- " + bundleFileName + Environment.NewLine;
+				if (!string.IsNullOrEmpty(es5FileName))
+					LastLog += "- " + es5FileName + Environment.NewLine;
+				LastLog += "- " + minFileName + Environment.NewLine;
+
 				if (isAnyFileModified)
 				{
 					LastCompileTime = DateTime.UtcNow;
+				}
+				else
+				{
+					LastLog += "Note: File content has not changed to previous build." + Environment.NewLine;
 				}
 
 				// TODO: Make optional, or better: use GZipStream and only show the size in the UI
@@ -501,6 +554,7 @@ namespace MiniWebCompiler.ViewModels
 			await ExecAsync(
 				"sassc --sourcemap=auto \"" + scssFileName + "\" \"" + cssFileName + "\"",
 				fileDir);
+			if (needsRecompile) return;   // Abort this run and restart
 
 			if (Status != false)
 			{
@@ -509,6 +563,8 @@ namespace MiniWebCompiler.ViewModels
 					fileDir);
 				PostprocessMapFile(minCssFileName + ".map");
 			}
+			if (needsRecompile) return;   // Abort this run and restart
+
 			if (Status != false)
 			{
 				RestoreResultFileTime(minCssFileName);
@@ -518,11 +574,21 @@ namespace MiniWebCompiler.ViewModels
 				{
 					File.Delete(Path.Combine(fileDir, cssFileName));
 					File.Delete(Path.Combine(fileDir, cssFileName + ".map"));
+					cssFileName = "";
 				}
+
+				LastLog += Environment.NewLine + "Compiled files:" + Environment.NewLine;
+				if (!string.IsNullOrEmpty(cssFileName))
+					LastLog += "- " + cssFileName + Environment.NewLine;
+				LastLog += "- " + minCssFileName + Environment.NewLine;
 
 				if (isAnyFileModified)
 				{
 					LastCompileTime = DateTime.UtcNow;
+				}
+				else
+				{
+					LastLog += "Note: File content has not changed to previous build." + Environment.NewLine;
 				}
 
 				// TODO: Make optional, or better: use GZipStream and only show the size in the UI
@@ -576,10 +642,10 @@ namespace MiniWebCompiler.ViewModels
 		{
 			string source = Path.Combine(Project.ProjectPath, FilePath);
 			string path = Path.GetDirectoryName(source);
-			DateTime latestSourceTime = File.GetLastWriteTimeUtc(source);
+			DateTime latestSourceTime = GetLastWriteTimeUtcSafe(source);
 			foreach (string addFile in AdditionalSourceFiles)
 			{
-				DateTime addFileTime = File.GetLastWriteTimeUtc(Path.Combine(Project.ProjectPath, addFile));
+				DateTime addFileTime = GetLastWriteTimeUtcSafe(Path.Combine(Project.ProjectPath, addFile));
 				if (addFileTime > latestSourceTime)
 					latestSourceTime = addFileTime;
 			}
@@ -588,13 +654,14 @@ namespace MiniWebCompiler.ViewModels
 			bool allUpToDate = true;
 			foreach (string output in outputs)
 			{
-				DateTime outputTime = File.GetLastWriteTimeUtc(Path.Combine(path, output));
+				DateTime outputTime = GetLastWriteTimeUtcSafe(Path.Combine(path, output));
 				if (outputTime > latestOutputTime)
 				{
 					latestOutputTime = outputTime;
 				}
 				if (!File.Exists(Path.Combine(path, output)) || outputTime < latestSourceTime)
 				{
+					Debug.WriteLine("File not up-to-date: " + FilePath);
 					allUpToDate = false;
 				}
 			}
@@ -603,6 +670,13 @@ namespace MiniWebCompiler.ViewModels
 				LastCompileTime = latestOutputTime;
 			}
 			return allUpToDate;
+		}
+
+		private static DateTime GetLastWriteTimeUtcSafe(string path)
+		{
+			if (File.Exists(path))
+				return File.GetLastWriteTimeUtc(path);
+			return DateTime.MinValue;
 		}
 
 		private async Task ExecAsync(string cmdline, string directory, bool utf8 = false)
@@ -614,7 +688,9 @@ namespace MiniWebCompiler.ViewModels
 			{
 				cmdline = "\"\"" + App.AppDir + Path.DirectorySeparatorChar + parts[0] + "\" " + parts[1] + "\"";
 			}
-			LastLog += cmdline + Environment.NewLine + Environment.NewLine;
+			if (!string.IsNullOrEmpty(LastLog))
+				LastLog += Environment.NewLine;
+			LastLog += "► " + cmdline + Environment.NewLine;
 
 			var psi = new ProcessStartInfo("cmd", "/c " + cmdline)
 			{
@@ -634,7 +710,18 @@ namespace MiniWebCompiler.ViewModels
 			await Task.Run(() => process.WaitForExit(10000));
 			string stdErr = process.StandardError.ReadToEnd();
 			string stdOut = process.StandardOutput.ReadToEnd();
-			LastLog += stdErr + stdOut + Environment.NewLine;
+			if (!string.IsNullOrWhiteSpace(stdErr))
+			{
+				// Remove complete whitespace lines at beginning and any whitespace at end
+				stdErr = Regex.Replace(stdErr, @"^( *[\r\n])*|\s$", "");
+				LastLog += stdErr + Environment.NewLine;
+			}
+			if (!string.IsNullOrWhiteSpace(stdOut))
+			{
+				// Remove complete whitespace lines at beginning and any whitespace at end
+				stdOut = Regex.Replace(stdOut, @"^( *[\r\n])*|\s$", "");
+				LastLog += stdOut + Environment.NewLine;
+			}
 			if (!process.HasExited)
 			{
 				LastLog += "Process has not exited" + Environment.NewLine;
@@ -722,7 +809,7 @@ namespace MiniWebCompiler.ViewModels
 					if (match.Success)
 					{
 						string file = match.Groups[2].Value.Trim();
-						if (Path.GetExtension(file) == "")
+						if (Path.GetExtension(file) != ".js")
 							file += ".js";
 						file = file.Replace("/", "\\");
 						file = Path.Combine(filePath, file);
@@ -755,7 +842,7 @@ namespace MiniWebCompiler.ViewModels
 							string file = capture.Value.Trim();
 							file = file.Replace("/", "\\");
 							file = Path.Combine(filePath, file);
-							if (Path.GetExtension(file) == "")
+							if (Path.GetExtension(file) != ".scss")
 							{
 								file += ".scss";
 							}
@@ -814,7 +901,11 @@ namespace MiniWebCompiler.ViewModels
 				}
 				if (newFileHash.SequenceEqual(info.Hash))
 				{
-					File.SetLastWriteTimeUtc(Path.Combine(fileDir, fileName), info.LastWriteTimeUtc);
+					// It's a bad idea to revert the write time of unchanged files because this will
+					// recompile these files at each app startup, and again not update the timestamp.
+					// Without this, the output file timestamp is always updated at compilation
+					// (even if unchanged) so that it will keep still at the next app start.
+					//File.SetLastWriteTimeUtc(Path.Combine(fileDir, fileName), info.LastWriteTimeUtc);
 					return;
 				}
 			}

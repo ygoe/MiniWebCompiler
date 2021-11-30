@@ -17,7 +17,7 @@ namespace Unclassified.Util
 			if (string.IsNullOrWhiteSpace(path1)) return false;
 			if (string.IsNullOrWhiteSpace(path2)) return false;
 
-			return String.Compare(
+			return string.Compare(
 				Path.GetFullPath(path1.Trim()).TrimEnd('\\'),
 				Path.GetFullPath(path2.Trim()).TrimEnd('\\'),
 				Environment.OSVersion.Platform == PlatformID.Unix ?
