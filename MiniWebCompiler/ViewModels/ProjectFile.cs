@@ -201,6 +201,18 @@ namespace MiniWebCompiler.ViewModels
 					MainViewModel.Instance.PlayErrorSound();
 					Views.MainWindow.Instance.SetError(FilePath, LastLog);
 				}
+
+				// Run custom script
+				if (isAnyFileModified)
+				{
+					string scriptFile = "miniwebcompiler.cmd";
+					if (File.Exists(Path.Combine(Project.ProjectPath, scriptFile)))
+					{
+						await ExecAsync(
+							scriptFile + " \"" + FilePath + "\"",
+							Project.ProjectPath);
+					}
+				}
 			}
 		}
 
@@ -487,7 +499,7 @@ namespace MiniWebCompiler.ViewModels
 				LastLog += Environment.NewLine + "Compiled files:" + Environment.NewLine;
 				if (!string.IsNullOrEmpty(bundleFileName))
 					LastLog += "- " + bundleFileName + Environment.NewLine;
-				if (!string.IsNullOrEmpty(es5FileName))
+				if (!string.IsNullOrEmpty(es5FileName) && es5FileName != bundleFileName)
 					LastLog += "- " + es5FileName + Environment.NewLine;
 				LastLog += "- " + minFileName + Environment.NewLine;
 
