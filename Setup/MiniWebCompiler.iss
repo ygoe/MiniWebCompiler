@@ -39,7 +39,6 @@ Type: filesandordirs; Name: "{app}\node_modules"
 
 [Files]
 Source: "..\MiniWebCompiler\bin\Release\*"; DestDir: "{app}"; Flags: ignoreversion
-Source: "sassc.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LICENSE-3RD-PARTY.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\LICENSE"; DestDir: "{app}"; DestName: "LICENSE.txt"; Flags: ignoreversion
 
@@ -63,6 +62,9 @@ Source: "{#AppData}\npm\node_modules\rollup\*"; DestDir: "{app}\node_modules\rol
 
 Source: "{#AppData}\npm\uglifyjs.cmd"; DestDir: "{app}"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "{#AppData}\npm\node_modules\uglify-js\*"; DestDir: "{app}\node_modules\uglify-js"; Flags: ignoreversion createallsubdirs recursesubdirs
+
+Source: "{#AppData}\npm\sass.cmd"; DestDir: "{app}"; Flags: ignoreversion createallsubdirs recursesubdirs
+Source: "{#AppData}\npm\node_modules\sass\*"; DestDir: "{app}\node_modules\sass"; Flags: ignoreversion createallsubdirs recursesubdirs
 
 [Icons]
 Name: "{userprograms}\Mini Web Compiler"; Filename: "{app}\MiniWebCompiler.exe"; WorkingDir: "{app}"; IconFilename: "{app}\MiniWebCompiler.exe"; IconIndex: 0

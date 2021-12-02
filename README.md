@@ -18,7 +18,7 @@ These are the tools that do the work:
 * [Babel](https://github.com/babel/babel): Transpile modern JavaScript to ECMAScript 5
 * [CSSO](https://github.com/css/csso): Minify CSS
 * [rollup.js](https://github.com/rollup/rollup): Bundle JavaScript modules
-* [SassC](https://github.com/sass/sassc): Compile SASS and SCSS to CSS
+* [Sass](https://sass-lang.com/install): Compile SASS and SCSS to CSS
 * [UglifyJS](https://github.com/mishoo/UglifyJS): Minify JavaScript
 
 All these tools are included in the setup package. The actual versions can be seen in the application’s About dialog.
@@ -52,9 +52,7 @@ These steps must be taken to use the application from source code and build the 
 * Install csso: `npm install csso-cli -g`
 * Install rollup: `npm install rollup -g`
 * Install uglify-es: `npm install uglify-js -g`
-* Build the Sass compiler from https://github.com/sass/sassc (download source according to [Windows build instructions](https://github.com/sass/sassc/blob/master/docs/building/windows-instructions.md))
-* Copy sassc.exe in the PATH (for debugging MiniWebCompiler)
-* Copy sassc.exe into the directory of MiniWebCompiler.iss (for building the setup package)
+* Install sass: `npm install sass -g`
 
 License
 -------

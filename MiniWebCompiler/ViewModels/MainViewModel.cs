@@ -169,20 +169,20 @@ namespace MiniWebCompiler.ViewModels
 			var cssoVersionTask = Exec("csso --version");
 			var nodeVersionTask = Exec("node --version");
 			var rollupVersionTask = Exec("rollup --version");
-			var sasscVersionTask = Exec("sassc --version");
+			var sassVersionTask = Exec("sass --version");
 			var uglifyjsVersionTask = Exec("uglifyjs --version");
 			await Task.WhenAll(
 				babelVersionTask,
 				cssoVersionTask,
 				nodeVersionTask,
 				rollupVersionTask,
-				sasscVersionTask,
+				sassVersionTask,
 				uglifyjsVersionTask);
 			string babelVersion = await babelVersionTask;
 			string cssoVersion = await cssoVersionTask;
 			string nodeVersion = await nodeVersionTask;
 			string rollupVersion = await rollupVersionTask;
-			string sasscVersion = await sasscVersionTask;
+			string sassVersion = await sassVersionTask;
 			string uglifyjsVersion = await uglifyjsVersionTask;
 
 			if (rollupVersion.StartsWith("rollup version "))
@@ -196,8 +196,8 @@ namespace MiniWebCompiler.ViewModels
 			sb.Append(Indent(nodeVersion));
 			sb.AppendLine("rollup:");
 			sb.Append(Indent(rollupVersion));
-			sb.AppendLine("sassc:");
-			sb.Append(Indent(sasscVersion));
+			sb.AppendLine("sass:");
+			sb.Append(Indent(sassVersion));
 			sb.AppendLine("uglifyjs:");
 			sb.Append(Indent(uglifyjsVersion));
 

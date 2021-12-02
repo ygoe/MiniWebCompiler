@@ -300,6 +300,7 @@ namespace MiniWebCompiler.ViewModels
 			string bundleFileName = Path.GetFileNameWithoutExtension(fullFileName) + ".bundle.js";
 			string es5FileName = Path.GetFileNameWithoutExtension(fullFileName) + ".es5.js";
 			string minFileName = Path.GetFileNameWithoutExtension(fullFileName) + ".min.js";
+			string onlyMinFileName = minFileName;
 
 			string banner = "";
 			bool transpile = false;
@@ -352,6 +353,7 @@ namespace MiniWebCompiler.ViewModels
 							bundleFileName = Path.Combine(buildDir, bundleFileName);
 							es5FileName = Path.Combine(buildDir, es5FileName);
 							minFileName = Path.Combine(buildDir, minFileName);
+							// onlyMinFileName is not changed
 
 							Directory.CreateDirectory(Path.Combine(fileDir, buildDir));
 						}
@@ -449,20 +451,14 @@ namespace MiniWebCompiler.ViewModels
 					string mapParam = "--source-map \"url='" + minFileName + ".map'\"";
 					if (File.Exists(Path.Combine(fileDir, es5FileName) + ".map"))
 					{
-						mapParam = "--source-map \"content='" + es5FileName.Replace('\\', '/') + ".map',url='" + minFileName.Replace('\\', '/') + ".map'\"";
+						// The url part must refer to the file without the build directory because
+						// both files (min.js and map) will be in the same directory.
+						mapParam = "--source-map \"content='" + es5FileName.Replace('\\', '/') + ".map',url='" + onlyMinFileName.Replace('\\', '/') + ".map'\"";
 					}
 					await ExecAsync(
 						"uglifyjs " + es5FileName + " --compress --mangle --output \"" + minFileName + "\" --comments \"/^!/\" " + mapParam,
 						fileDir,
 						utf8: true);
-
-					if (buildDir != "")
-					{
-						// Remove specified build directory from source map reference or it won't be found
-						string[] lines = File.ReadAllLines(Path.Combine(fileDir, minFileName));
-						lines[lines.Length - 1] = lines[lines.Length - 1].Replace("//# sourceMappingURL=" + buildDir.Replace('\\', '/'), "//# sourceMappingURL=");
-						File.WriteAllLines(Path.Combine(fileDir, minFileName), lines);
-					}
 
 					PostprocessMapFile(minFileName + ".map");
 
@@ -564,8 +560,9 @@ namespace MiniWebCompiler.ViewModels
 			LastLog = "";
 
 			await ExecAsync(
-				"sassc --sourcemap=auto \"" + scssFileName + "\" \"" + cssFileName + "\"",
-				fileDir);
+				"sass \"" + scssFileName + "\" \"" + cssFileName + "\"",
+				fileDir,
+				utf8: true);
 			if (needsRecompile) return;   // Abort this run and restart
 
 			if (Status != false)
