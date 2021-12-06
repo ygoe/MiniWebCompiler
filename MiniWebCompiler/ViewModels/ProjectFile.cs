@@ -285,11 +285,6 @@ namespace MiniWebCompiler.ViewModels
 					LastLog += "Note: File content has not changed to previous build." + Environment.NewLine;
 				}
 
-
-				// TODO: Make optional, or better: use GZipStream and only show the size in the UI
-				//await ExecAsync(
-				//	"7za a -tgzip \"" + minCssFileName + ".gz\" \"" + minCssFileName + "\" >nul",
-				//	Path.GetDirectoryName(fileName));
 				SetCompressedResultSize(Path.Combine(fileDir, minCssFileName));
 			}
 		}
@@ -448,7 +443,7 @@ namespace MiniWebCompiler.ViewModels
 				if (needsRecompile) return;   // Abort this run and restart
 
 				{
-					string mapParam = "--source-map \"url='" + minFileName + ".map'\"";
+					string mapParam = "--source-map \"url='" + onlyMinFileName.Replace('\\', '/') + ".map'\"";
 					if (File.Exists(Path.Combine(fileDir, es5FileName) + ".map"))
 					{
 						// The url part must refer to the file without the build directory because
@@ -508,10 +503,6 @@ namespace MiniWebCompiler.ViewModels
 					LastLog += "Note: File content has not changed to previous build." + Environment.NewLine;
 				}
 
-				// TODO: Make optional, or better: use GZipStream and only show the size in the UI
-				//await ExecAsync(
-				//	"7za a -tgzip \"" + minFileName + ".gz\" \"" + minFileName + "\" >nul",
-				//	Path.GetDirectoryName(fileName));
 				SetCompressedResultSize(Path.Combine(fileDir, minFileName));
 			}
 		}
@@ -600,10 +591,6 @@ namespace MiniWebCompiler.ViewModels
 					LastLog += "Note: File content has not changed to previous build." + Environment.NewLine;
 				}
 
-				// TODO: Make optional, or better: use GZipStream and only show the size in the UI
-				//await ExecAsync(
-				//	"7za a -tgzip \"" + minCssFileName + ".gz\" \"" + minCssFileName + "\" >nul",
-				//	Path.GetDirectoryName(fileName));
 				SetCompressedResultSize(Path.Combine(fileDir, minCssFileName));
 			}
 		}
@@ -843,7 +830,7 @@ namespace MiniWebCompiler.ViewModels
 				while (!reader.EndOfStream)
 				{
 					string line = reader.ReadLine();
-					var match = Regex.Match(line, @"^\s*@import\s+(?:(""|')(.+?)\1\s*,?\s*)+\s*;\s*$");
+					var match = Regex.Match(line, @"^\s*@(?:forward|import|use)\s+(?:(""|')(.+?)\1\s*,?\s*)+");
 					if (match.Success)
 					{
 						foreach (Capture capture in match.Groups[2].Captures)
@@ -851,19 +838,32 @@ namespace MiniWebCompiler.ViewModels
 							string file = capture.Value.Trim();
 							file = file.Replace("/", "\\");
 							file = Path.Combine(filePath, file);
-							if (Path.GetExtension(file) != ".scss")
+
+							switch (Path.GetExtension(file))
 							{
-								file += ".scss";
-							}
-							if (Path.GetExtension(file) == ".sass" || Path.GetExtension(file) == ".scss")
-							{
-								string partialFile = Path.Combine(Path.GetDirectoryName(file), "_" + Path.GetFileName(file));
-								if (!File.Exists(file) && File.Exists(partialFile))
-									file = partialFile;
-								if (AdditionalSourceFiles.Add(file))
-								{
-									DetectAdditionalSourceFilesScss(file, clear: false);
-								}
+								case ".css":
+								case ".scss":
+								case ".sass":
+									if (AdditionalSourceFiles.Add(file))
+										DetectAdditionalSourceFilesScss(file, clear: false);
+									break;
+								default:
+									// Add all possible variants as they may exist or change later
+									if (AdditionalSourceFiles.Add(file + ".css"))
+										DetectAdditionalSourceFilesScss(file + ".css", clear: false);
+									if (AdditionalSourceFiles.Add(file + ".scss"))
+										DetectAdditionalSourceFilesScss(file + ".scss", clear: false);
+									if (AdditionalSourceFiles.Add(file + ".sass"))
+										DetectAdditionalSourceFilesScss(file + ".sass", clear: false);
+
+									string partialFile = Path.Combine(Path.GetDirectoryName(file), "_" + Path.GetFileName(file));
+									if (AdditionalSourceFiles.Add(partialFile + ".css"))
+										DetectAdditionalSourceFilesScss(partialFile + ".css", clear: false);
+									if (AdditionalSourceFiles.Add(partialFile + ".scss"))
+										DetectAdditionalSourceFilesScss(partialFile + ".scss", clear: false);
+									if (AdditionalSourceFiles.Add(partialFile + ".sass"))
+										DetectAdditionalSourceFilesScss(partialFile + ".sass", clear: false);
+									break;
 							}
 						}
 					}
