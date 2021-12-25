@@ -175,6 +175,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Resource Include="MiniWebCompiler_working.ico" />
+    <Resource Include="MiniWebCompiler_error.ico" />
     <Content Include="Success.wav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -12,6 +12,7 @@ namespace MiniWebCompiler.Views
 		private readonly System.Windows.Forms.NotifyIcon notifyIcon;
 		private readonly System.Drawing.Icon notifyNormalIcon;
 		private readonly System.Drawing.Icon notifyWorkingIcon;
+		private readonly System.Drawing.Icon notifyErrorIcon;
 
 		#region Constructor
 
@@ -29,6 +30,8 @@ namespace MiniWebCompiler.Views
 			notifyNormalIcon = System.Drawing.Icon.ExtractAssociatedIcon(Environment.GetCommandLineArgs()[0]);
 			var iconStream = Application.GetResourceStream(new Uri("pack://application:,,,/MiniWebCompiler;component/MiniWebCompiler_working.ico")).Stream;
 			notifyWorkingIcon = new System.Drawing.Icon(iconStream);
+			iconStream = Application.GetResourceStream(new Uri("pack://application:,,,/MiniWebCompiler;component/MiniWebCompiler_error.ico")).Stream;
+			notifyErrorIcon = new System.Drawing.Icon(iconStream);
 
 			notifyIcon = new System.Windows.Forms.NotifyIcon();
 			notifyIcon.MouseClick += NotifyIcon_MouseClick;
@@ -75,7 +78,7 @@ namespace MiniWebCompiler.Views
 				{
 					TaskbarItemInfo.ProgressValue = 1;
 					TaskbarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Error;
-					notifyIcon.Icon = notifyNormalIcon;
+					notifyIcon.Icon = notifyErrorIcon;
 				}
 			}
 		}
