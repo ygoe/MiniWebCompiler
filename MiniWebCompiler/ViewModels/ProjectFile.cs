@@ -801,7 +801,7 @@ namespace MiniWebCompiler.ViewModels
 				while (!reader.EndOfStream)
 				{
 					string line = reader.ReadLine();
-					var match = Regex.Match(line, @"^\s*import\s+.*([""'])(.+?)\1");
+					var match = Regex.Match(line, @"^\s*import\s+.*?([""'])(.+?)\1");
 					if (match.Success)
 					{
 						string file = match.Groups[2].Value.Trim();
