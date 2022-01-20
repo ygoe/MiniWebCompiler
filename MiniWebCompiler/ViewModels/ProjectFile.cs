@@ -203,7 +203,7 @@ namespace MiniWebCompiler.ViewModels
 				}
 
 				// Run custom script
-				if (isAnyFileModified)
+				if (isAnyFileModified || force)
 				{
 					string scriptFile = "miniwebcompiler.cmd";
 					if (File.Exists(Path.Combine(Project.ProjectPath, scriptFile)))
