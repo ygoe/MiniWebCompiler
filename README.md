@@ -33,6 +33,62 @@ The build output files can be written to a separate directory to keep your sourc
 
 JavaScript files are transpiled to ECMAScript 5 if they contain the comment line `/* ecmascript */` near the top of the file. (This is **deprecated** and will be removed in a future version, see the warning above.)
 
+### Example
+
+This is how it looks like in a JavaScript source files:
+
+```js
+/*! frontfire-core.js v2.0.0-dev | @license MIT | ygoe.de */
+/* build-dir(build) */
+
+// Copyright (c) 2022, Yves Goergen, https://ygoe.de
+// (More of the license text)
+
+"Source code here...";
+```
+
+And here is a bundling example that merges several JavaScript files into a single output file:
+
+```js
+/*! frontfire-core-singlefile.js v2.0.0-dev | @license MIT | ygoe.de */
+/* no-iife */
+/* build-dir(build) */
+
+// Copyright (c) 2022, Yves Goergen, https://ygoe.de
+// (More of the license text)
+
+import "./arraylist";
+import "./frontfire-core";
+import "./color";
+import "./datacolor";
+```
+
+Script automation
+-----------------
+If the file miniwebcompiler.cmd exists in the project directory (next to miniwebcompiler.json), then it will be called after each file was compiled (except if unchanged, but still when clicking the *Compile all* button). It will be passed the name of the compiled source file (as listed in the project with its relative path) as first argument.
+
+This script can be used to perform additional steps after a compiled file was updated, like post-processing with external tools or copying it into other project directories conveniently.
+
+### Example
+
+Here’s what I do with these scripts:
+
+```cmd
+@echo off
+if "%~1" == "ui\src\css\frontfire-ui-complete.scss" (
+	echo Copying frontfire-ui-complete.min.css to my website
+	copy /y ui\src\css\build\frontfire-ui-complete.min.css* C:\Web\mywebsite\lib\frontfire2 >nul
+	echo Copying frontfire-ui-complete.min.css to Farbeimer
+	copy /y ui\src\css\build\frontfire-ui-complete.min.css* C:\Web\farbeimer\lib\frontfire2 >nul
+)
+if "%~1" == "ui\src\js\frontfire-ui-complete-singlefile.js" (
+	echo Copying frontfire-ui-complete-singlefile.min.js to my website
+	copy /y ui\src\js\build\frontfire-ui-complete-singlefile.min.js* C:\Web\mywebsite\lib\frontfire2 >nul
+	echo Copying frontfire-ui-complete-singlefile.min.js to Farbeimer
+	copy /y ui\src\js\build\frontfire-ui-complete-singlefile.min.js* C:\Web\farbeimer\lib\frontfire2 >nul
+)
+```
+
 System requirements
 -------------------
 * Windows 7, 8, 10, 11 (64-bit) (currently only tested in Windows 10)
@@ -42,11 +98,11 @@ System requirements
 
 Download
 --------
-Please go to the releases section of this repository to find the latest installation package. It extracts all files into a directory in your user profile (no administrator privileges used) and sets up the start menu and autostart shortcut.
+Please go to the releases section of this repository to find the latest installation package. It extracts all files into a directory in your user profile (no administrator privileges used) and sets up the start menu and autostart shortcuts.
 
 Build prerequisites
 -------------------
-These steps must be taken to use the application from source code and build the setup package.
+These steps must be taken to use the application from source code and build the setup package. The setup will pick up the files from their global installation path. This means that globally installing the npm packages is required on the build machine, but the installed application will always use its own embedded versions of the tools.
 
 **Note:** None of this applies when installing Mini Web Compiler from the setup package.
 
@@ -66,4 +122,4 @@ License
 -------
 [MIT license](https://github.com/ygoe/MiniWebCompiler/blob/master/LICENSE)
 
-See LICENSE-3RD-PARTY.txt for licenses of third-party tools that are included in the setup package.
+See Setup/LICENSE-3RD-PARTY.txt for licenses of third-party tools that are included in the setup package.
