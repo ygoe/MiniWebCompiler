@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using MiniWebCompiler.Views;
 using Unclassified.UI;
 using ViewModelKit;
@@ -45,6 +46,8 @@ namespace MiniWebCompiler.ViewModels
 		}
 
 		#region Properties
+
+		public Cursor Cursor { get; set; } = Cursors.Arrow;
 
 		public ObservableCollection<Project> Projects { get; } = new ObservableCollection<Project>();
 
@@ -156,6 +159,7 @@ namespace MiniWebCompiler.ViewModels
 		private async void OnAbout()
 		{
 			AboutCommand.IsEnabled = false;
+			Cursor = Cursors.AppStarting;
 
 			var sb = new StringBuilder();
 			sb.AppendLine("Mini Web Compiler");
@@ -202,6 +206,7 @@ namespace MiniWebCompiler.ViewModels
 			sb.Append(Indent(uglifyjsVersion));
 
 			AboutCommand.IsEnabled = null;
+			Cursor = Cursors.Arrow;
 			MessageBox.Show(sb.ToString(), "About");
 		}
 
