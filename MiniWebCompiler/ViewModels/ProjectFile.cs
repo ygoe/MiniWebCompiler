@@ -468,20 +468,36 @@ namespace MiniWebCompiler.ViewModels
 				RestoreResultFileTime(minFileName);
 				RestoreResultFileTime(minFileName + ".map");
 
-				if (!Project.KeepIntermediaryFiles)
+				if (transpile)
 				{
-					if (bundleFileName != srcFileName)
+					if (!Project.KeepIntermediaryFiles)
 					{
-						File.Delete(Path.Combine(fileDir, bundleFileName));
-						File.Delete(Path.Combine(fileDir, bundleFileName + ".map"));
-						bundleFileName = "";
-					}
-					if (!Project.KeepUnminifiedFiles)
-					{
-						if (es5FileName != srcFileName)
+						if (bundleFileName != srcFileName)
 						{
-							File.Delete(Path.Combine(fileDir, es5FileName));
-							File.Delete(Path.Combine(fileDir, es5FileName + ".map"));
+							File.Delete(Path.Combine(fileDir, bundleFileName));
+							File.Delete(Path.Combine(fileDir, bundleFileName + ".map"));
+							bundleFileName = "";
+						}
+						if (!Project.KeepUnminifiedFiles)
+						{
+							if (es5FileName != srcFileName)
+							{
+								File.Delete(Path.Combine(fileDir, es5FileName));
+								File.Delete(Path.Combine(fileDir, es5FileName + ".map"));
+								es5FileName = "";
+							}
+						}
+					}
+				}
+				else
+				{
+					if (!Project.KeepIntermediaryFiles && !Project.KeepUnminifiedFiles)
+					{
+						if (bundleFileName != srcFileName)
+						{
+							File.Delete(Path.Combine(fileDir, bundleFileName));
+							File.Delete(Path.Combine(fileDir, bundleFileName + ".map"));
+							bundleFileName = "";
 							es5FileName = "";
 						}
 					}
