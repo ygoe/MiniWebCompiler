@@ -29,6 +29,12 @@ AppPublisherURL=https://unclassified.software/apps/miniwebcompiler
 VersionInfoVersion={#ShortRevId}
 VersionInfoProductName=Mini Web Compiler
 VersionInfoProductVersion={#ShortRevId}
+InternalCompressLevel=max
+
+; Setup design
+; Large image max. 164x314 pixels, small image max. 55x58 pixels
+WizardImageStretch=no
+WizardSmallImageFile=MiniWebCompiler_48.bmp
 
 [Tasks]
 Name: startupicon; Description: "Start Mini Web Compiler with Windows"
