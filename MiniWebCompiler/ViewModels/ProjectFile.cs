@@ -263,7 +263,7 @@ namespace MiniWebCompiler.ViewModels
 			CompressedResultSize = -1;
 
 			await ExecAsync(
-				"csso \"" + cssFileName + "\" --output \"" + minCssFileName + "\" --source-map \"" + minCssFileName + ".map\"",
+				"csso \"" + cssFileName + "\" --output \"" + minCssFileName + "\" --source-map \"" + minCssFileName + ".map\" --no-restructure",
 				fileDir);
 			PostprocessMapFile(minCssFileName + ".map");
 			if (needsRecompile) return;   // Abort this run and restart
@@ -575,7 +575,7 @@ namespace MiniWebCompiler.ViewModels
 			if (Status != false)
 			{
 				await ExecAsync(
-					"csso \"" + cssFileName + "\" --output \"" + minCssFileName + "\" --source-map \"" + minCssFileName + ".map\"",
+					"csso \"" + cssFileName + "\" --output \"" + minCssFileName + "\" --source-map \"" + minCssFileName + ".map\" --no-restructure",
 					fileDir);
 				PostprocessMapFile(minCssFileName + ".map");
 			}
