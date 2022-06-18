@@ -42,6 +42,7 @@ Name: startupicon; Description: "Start Mini Web Compiler with Windows"
 [InstallDelete]
 ; First clean up any old files
 Type: filesandordirs; Name: "{app}\node_modules"
+Type: file; Name: "{app}\babel.cmd"
 
 [Files]
 Source: "..\MiniWebCompiler\bin\Release\*"; DestDir: "{app}"; Flags: ignoreversion
@@ -53,12 +54,6 @@ Source: "C:\Program Files\nodejs\node.exe"; DestDir: "{app}"; Flags: ignoreversi
 
 ; Node modules
 #define AppData GetEnv("AppData")
-
-Source: "{#AppData}\npm\babel.cmd"; DestDir: "{app}"; Flags: ignoreversion createallsubdirs recursesubdirs
-Source: "{#AppData}\npm\node_modules\babel-cli\*"; DestDir: "{app}\node_modules\babel-cli"; Flags: ignoreversion createallsubdirs recursesubdirs
-Source: "{#AppData}\npm\node_modules\babel-preset-env\*"; DestDir: "{app}\node_modules\babel-preset-env"; Flags: ignoreversion createallsubdirs recursesubdirs
-;Source: "{#AppData}\npm\node_modules\babel-preset-minify\*"; DestDir: "{app}\node_modules\babel-preset-minify"; Flags: ignoreversion createallsubdirs recursesubdirs
-;(Add to LICENSE-3RD-PARTY.txt if used)
 
 Source: "{#AppData}\npm\csso.cmd"; DestDir: "{app}"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "{#AppData}\npm\node_modules\csso-cli\*"; DestDir: "{app}\node_modules\csso-cli"; Flags: ignoreversion createallsubdirs recursesubdirs

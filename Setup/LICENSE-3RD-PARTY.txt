@@ -4,10 +4,8 @@ The MIT License (MIT)
 
 Applies to:
 
-- Babel, Copyright (c) 2014-2018 Sebastian McKenzie and other contributors
-  https://github.com/babel/babel
-
-- CSSO, Copyright (C) 2017 by Roman Dvornov
+- CSSO, Copyright (C) 2015-2021 by Roman Dvornov
+  Copyright (C) 2011-2015 by Sergey Kryzhanovsky
   https://github.com/css/csso
 
 - Node.js, Copyright Node.js contributors. All rights reserved.
@@ -17,8 +15,11 @@ Applies to:
 - rollup.js, Copyright (c) 2017 these people
   https://github.com/rollup/rollup
 
-- SassC, Copyright (C) 2012-2016 by the Sass Open Source Foundation
-  https://github.com/sass/sassc
+- rollup-plugin-sourcemaps, Copyright (c) 2020 Max Davidson
+  https://github.com/maxdavidson/rollup-plugin-sourcemaps
+
+- Sass, Copyright (c) 2016, Google Inc.
+  https://github.com/sass/dart-sass
 
 ----------------------------------------------------------------------------
 
@@ -48,8 +49,8 @@ The 2-clause BSD license
 
 Applies to:
 
-- UglifyJS, Copyright 2012-2013 (c) Mihai Bazon <mihai.bazon@gmail.com>
-  https://github.com/mishoo/UglifyJS2
+- UglifyJS, Copyright 2012-2019 (c) Mihai Bazon <mihai.bazon@gmail.com>
+  https://github.com/mishoo/UglifyJS
 
 ----------------------------------------------------------------------------
 

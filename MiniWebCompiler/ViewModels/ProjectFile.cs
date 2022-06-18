@@ -295,12 +295,10 @@ namespace MiniWebCompiler.ViewModels
 		{
 			string srcFileName = Path.GetFileName(fullFileName);
 			string bundleFileName = Path.GetFileNameWithoutExtension(fullFileName) + ".bundle.js";
-			string es5FileName = Path.GetFileNameWithoutExtension(fullFileName) + ".es5.js";
 			string minFileName = Path.GetFileNameWithoutExtension(fullFileName) + ".min.js";
 			string onlyMinFileName = minFileName;
 
 			string banner = "";
-			bool transpile = false;
 			string iifeParams = "";
 			string iifeArgs = "";
 			bool noIife = false;
@@ -317,11 +315,6 @@ namespace MiniWebCompiler.ViewModels
 					{
 						string comment = match.Groups[1].Value;
 						banner = " --banner \"" + comment + "\"";
-					}
-					match = Regex.Match(line, @"^\s*/\*\s*ecmascript\s*\*/", RegexOptions.IgnoreCase);
-					if (match.Success)
-					{
-						transpile = true;
 					}
 					match = Regex.Match(line, @"^\s*/\*\s*iife-params\((.*)\)\s*\*/", RegexOptions.IgnoreCase);
 					if (match.Success)
@@ -348,7 +341,6 @@ namespace MiniWebCompiler.ViewModels
 						if (buildDir != "")
 						{
 							bundleFileName = Path.Combine(buildDir, bundleFileName);
-							es5FileName = Path.Combine(buildDir, es5FileName);
 							minFileName = Path.Combine(buildDir, minFileName);
 							// onlyMinFileName is not changed
 
@@ -413,55 +405,19 @@ namespace MiniWebCompiler.ViewModels
 
 			if (Status != false)
 			{
-				if (transpile)
+				string mapParam = "--source-map \"url='" + onlyMinFileName.Replace('\\', '/') + ".map'\"";
+				if (File.Exists(Path.Combine(fileDir, bundleFileName) + ".map"))
 				{
-					string presets;
-					string presetDir = Path.Combine(App.AppDir, "node_modules");
-					if (!Directory.Exists(presetDir))
-					{
-						presetDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "npm", "node_modules");
-					}
-					//presets = "\"" + Path.Combine(presetDir, "babel-preset-env") + "\",\"" + Path.Combine(presetDir, "babel-preset-minify") + "\"";
-					presets = "\"" + Path.Combine(presetDir, "babel-preset-env") + "\"";
-
-					string mapParam = "";
-					if (File.Exists(Path.Combine(fileDir, bundleFileName) + ".map"))
-					{
-						mapParam = "--input-source-map \"" + bundleFileName + ".map\"";
-					}
-					await ExecAsync(
-						"babel \"" + bundleFileName + "\" --out-file \"" + es5FileName + "\" " + mapParam + " --source-maps --presets=" + presets,
-						fileDir);
-
-					// TODO: Issues with babel-minify:
-					// * Banner/license comment is not preserved
-					// * Incorrect results, see https://github.com/babel/minify/issues/797
-					// (Add to setup if used)
+					// The url part must refer to the file without the build directory because
+					// both files (min.js and map) will be in the same directory.
+					mapParam = "--source-map \"content='" + bundleFileName.Replace('\\', '/') + ".map',url='" + onlyMinFileName.Replace('\\', '/') + ".map'\"";
 				}
-				else
-				{
-					es5FileName = bundleFileName;
-				}
-				if (needsRecompile) return;   // Abort this run and restart
+				await ExecAsync(
+					"uglifyjs " + bundleFileName + " --compress --mangle --output \"" + minFileName + "\" --comments \"/^!/\" " + mapParam,
+					fileDir,
+					utf8: true);
 
-				{
-					string mapParam = "--source-map \"url='" + onlyMinFileName.Replace('\\', '/') + ".map'\"";
-					if (File.Exists(Path.Combine(fileDir, es5FileName) + ".map"))
-					{
-						// The url part must refer to the file without the build directory because
-						// both files (min.js and map) will be in the same directory.
-						mapParam = "--source-map \"content='" + es5FileName.Replace('\\', '/') + ".map',url='" + onlyMinFileName.Replace('\\', '/') + ".map'\"";
-					}
-					await ExecAsync(
-						"uglifyjs " + es5FileName + " --compress --mangle --output \"" + minFileName + "\" --comments \"/^!/\" " + mapParam,
-						fileDir,
-						utf8: true);
-
-					PostprocessMapFile(minFileName + ".map");
-
-					// TODO: Issues with babel + uglify:
-					// * Banner/license comment is either not preserved or duplicated (depending on using rollup option --banner)
-				}
+				PostprocessMapFile(minFileName + ".map");
 			}
 			if (needsRecompile) return;   // Abort this run and restart
 
@@ -470,46 +426,19 @@ namespace MiniWebCompiler.ViewModels
 				RestoreResultFileTime(minFileName);
 				RestoreResultFileTime(minFileName + ".map");
 
-				if (transpile)
+				if (!Project.KeepIntermediaryFiles && !Project.KeepUnminifiedFiles)
 				{
-					if (!Project.KeepIntermediaryFiles)
+					if (bundleFileName != srcFileName)
 					{
-						if (bundleFileName != srcFileName)
-						{
-							File.Delete(Path.Combine(fileDir, bundleFileName));
-							File.Delete(Path.Combine(fileDir, bundleFileName + ".map"));
-							bundleFileName = "";
-						}
-						if (!Project.KeepUnminifiedFiles)
-						{
-							if (es5FileName != srcFileName)
-							{
-								File.Delete(Path.Combine(fileDir, es5FileName));
-								File.Delete(Path.Combine(fileDir, es5FileName + ".map"));
-								es5FileName = "";
-							}
-						}
-					}
-				}
-				else
-				{
-					if (!Project.KeepIntermediaryFiles && !Project.KeepUnminifiedFiles)
-					{
-						if (bundleFileName != srcFileName)
-						{
-							File.Delete(Path.Combine(fileDir, bundleFileName));
-							File.Delete(Path.Combine(fileDir, bundleFileName + ".map"));
-							bundleFileName = "";
-							es5FileName = "";
-						}
+						File.Delete(Path.Combine(fileDir, bundleFileName));
+						File.Delete(Path.Combine(fileDir, bundleFileName + ".map"));
+						bundleFileName = "";
 					}
 				}
 
 				LastLog += Environment.NewLine + "Compiled files:" + Environment.NewLine;
 				if (!string.IsNullOrEmpty(bundleFileName))
 					LastLog += "- " + bundleFileName + Environment.NewLine;
-				if (!string.IsNullOrEmpty(es5FileName) && es5FileName != bundleFileName)
-					LastLog += "- " + es5FileName + Environment.NewLine;
 				LastLog += "- " + minFileName + Environment.NewLine;
 
 				if (isAnyFileModified)

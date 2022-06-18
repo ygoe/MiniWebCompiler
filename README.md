@@ -8,14 +8,13 @@ This application manages project files stored in JSON format. Each project you m
 The following file types are supported:
 
 * CSS: Minify
-* JavaScript: Bundle, transpile to ECMAScript 5 (for Internet Explorer), minify
+* JavaScript: Bundle, minify
 * SCSS: Compile to CSS, minify
 
 Most of the actual processing and compilation is done by widely recognised and established tools. All of them are made available as NPM packages that run on Node.js. They are bundled together in a managing GUI that calls the tools with the appropriate parameters and takes care of the necessary file handling to ensure proper source maps (which are fully maintained along all the way) and keep important source comments like license summaries.
 
 These are the tools that do the work:
 
-* [Babel](https://github.com/babel/babel): Transpile modern JavaScript to ECMAScript 5 (deprecated, see warning below)
 * [CSSO](https://github.com/css/csso): Minify CSS
 * [rollup.js](https://github.com/rollup/rollup): Bundle JavaScript modules
 * [rollup-plugin-sourcemaps](https://github.com/maxdavidson/rollup-plugin-sourcemaps): Rollup plugin to read input source maps (for bundling bundles)
@@ -24,15 +23,13 @@ These are the tools that do the work:
 
 All these tools are included in the setup package. They are installed locally in the application directory so they won’t interfer with any globally installed NPM packages/tools. The actual versions can be seen in the application’s About dialog.
 
-**Warning:** Babel in Mini Web Compiler is deprecated. It requires a patch to support source maps but that patch can no longer be applied. A newer version of Babel (v7 instead of v6) is available but not included in Mini Web Compiler. Its only use is to convert modern JavaScript for Internet Explorer, which itself is deprecated and should no longer be used or supported. Current browsers all support modern JavaScript so this time-consuming extra step is no longer necessary.
+**Note:** There was support to transpile JavaScript files to ECMAScript 5 in previous versions of Mini Web Compiler. This was only needed to target Internet Explorer, which has been abandoned by Microsoft now. To read more about this feature, download version 1.4.0 and also switch this page to the tag v1.4.0 and read this again.
 
 JavaScript configuration
 ------------------------
 JavaScript files are run through `rollup` to bundle them into a single file, if any imports of other files are detected in the source file. The bundled code is wrapped into an immediately invoked function expression (IIFE). The parameters of that function and the arguments when calling it can be specified with comment lines like `/* iife-params($) */` and `/* iife-args(jQuery) */` near the top of the file. The code between the parentheses is inserted into the generated file. The comment `/* no-iife */` disables the use of an IIFE and basically concatenates all the files together.
 
 The build output files can be written to a separate directory to keep your source code folder tidy. Use a comment like `/* build-dir(...) */` and anything in the parentheses is the relative path to your build output files. The build directory is created if it doesn’t exist. This configuration also works for CSS files, but note that you cannot use relative `url()` references without manually copying the build file to the correct directory.
-
-JavaScript files are transpiled to ECMAScript 5 if they contain the comment line `/* ecmascript */` near the top of the file. (This is **deprecated** and will be removed in a future version, see the warning above.)
 
 ### Example
 
@@ -93,7 +90,7 @@ if "%~1" == "ui\src\js\frontfire-ui-complete-singlefile.js" (
 System requirements
 -------------------
 * Windows 7, 8, 10, 11 (64-bit) (currently only tested in Windows 10)
-* .NET Framework 4.7.2 or later (comes with Windows Update)
+* .NET Framework 4.8 or later (comes with Windows Update)
 * No Node.js (included in the setup package)
 * No other tools (included in the setup package)
 
@@ -108,21 +105,13 @@ These steps must be taken to use the application from source code and build the 
 **Note:** None of this applies when installing Mini Web Compiler from the setup package.
 
 * Install Node.js for Windows from https://nodejs.org
-* (*) Install babel-cli: `npm install babel-cli -g` (This is the outdated v6, see warning above.)
-* (*) Patch babel-cli as in https://github.com/babel/babel/issues/3940#issuecomment-365911189
-* (*) Install babel-preset-env: `npm install babel-preset-env -g`
-* (*) Install babel-preset-minify: `npm install babel-preset-minify -g`
 * Install csso: `npm install csso-cli -g` (See note below)
 * Install rollup: `npm install rollup -g`
 * Install rollup-plugin-sourcemaps: `npm install rollup-plugin-sourcemaps -g`
 * Install uglify-es: `npm install uglify-js -g`
 * Install sass: `npm install sass -g`
 
-The steps marked with (*) are necessary for the deprecated transpiling support. It should be okay to leave them away and just fix any errors related to missing files.
-
 To upgrade all tools to the latest version, run: `npm update -g`
-
-After upgrading the tools, all patches mentioned above must be applied again.
 
 ### Latest csso version
 
