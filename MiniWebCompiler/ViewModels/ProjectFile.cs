@@ -573,7 +573,12 @@ namespace MiniWebCompiler.ViewModels
 			dict.Remove("sourcesContent");
 
 			// Write back file
-			json = JSON.ToJSON(dict);
+			var jsonParams = new JSONParameters
+			{
+				UsingGlobalTypes = false,
+				UseExtensions = false
+			};
+			json = JSON.ToJSON(dict, jsonParams);
 			File.WriteAllText(fileName, json);
 		}
 

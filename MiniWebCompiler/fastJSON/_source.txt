@@ -1,2 +1,7 @@
 https://www.codeproject.com/Articles/159450/fastJSON
-v2.1.28 (2018-01-16)
+v2.4.0.2 (2021-01-23)
+
+With modifications:
+- PrettyPrint made prettier
+- Added SerializeToCamelCaseNames
+- Added JsonConditionalAttribute

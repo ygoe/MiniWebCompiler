@@ -27,6 +27,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -36,6 +37,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>MiniWebCompiler.Program</StartupObject>
@@ -75,6 +77,7 @@
     </ApplicationDefinition>
     <Compile Include="fastJSON\Formatter.cs" />
     <Compile Include="fastJSON\Getters.cs" />
+    <Compile Include="fastJSON\Helper.cs" />
     <Compile Include="fastJSON\JSON.cs" />
     <Compile Include="fastJSON\JsonConditionalAttribute.cs" />
     <Compile Include="fastJSON\JsonParser.cs" />

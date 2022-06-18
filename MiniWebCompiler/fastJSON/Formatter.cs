@@ -4,21 +4,21 @@ namespace fastJSON
 {
     internal static class Formatter
     {
-        private static string _indent = "   ";
+        //private static string _indent = "   ";
 
-        public static void AppendIndent(StringBuilder sb, int count)
+        private static void AppendIndent(StringBuilder sb, int count, string indent)
         {
-            for (; count > 0; --count) sb.Append(_indent);
+            for (; count > 0; --count) sb.Append(indent);
         }
 
         public static string PrettyPrint(string input)
         {
-            return PrettyPrint(input, "   ");
+            return PrettyPrint(input, new string(' ', JSON.Parameters.FormatterIndentSpaces));// "   ");
         }
 
         public static string PrettyPrint(string input, string spaces)
         {
-            _indent = spaces;
+            //_indent = spaces;
             var output = new StringBuilder();
             int depth = 0;
             int len = input.Length;
@@ -55,7 +55,7 @@ namespace fastJSON
                         if (nextCh != ']' && nextCh != '}')
                         {
                             output.AppendLine();
-                            AppendIndent(output, ++depth);
+                            AppendIndent(output, ++depth, spaces);
                         }
                         break;
                     case '}':
@@ -63,14 +63,14 @@ namespace fastJSON
                         if (prevCh != '[' && prevCh != '{')
                         {
                             output.AppendLine();
-                            AppendIndent(output, --depth);
+                            AppendIndent(output, --depth, spaces);
                         }
                         output.Append(ch);
                         break;
                     case ',':
                         output.Append(ch);
                         output.AppendLine();
-                        AppendIndent(output, depth);
+                        AppendIndent(output, depth, spaces);
                         break;
                     case ':':
                         output.Append(": ");

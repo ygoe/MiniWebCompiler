@@ -301,7 +301,13 @@ namespace MiniWebCompiler.ViewModels
 					{
 						try
 						{
-							var configFile = JSON.ToObject<ConfigFile>(json);
+							var jsonParams = new JSONParameters
+							{
+								AllowNonQuotedKeys = true,
+								UsingGlobalTypes = false,
+								UseExtensions = false
+							};
+							var configFile = JSON.ToObject<ConfigFile>(json, jsonParams);
 							Name = configFile.ProjectName;
 							KeepUnminifiedFiles = configFile.KeepUnminifiedFiles;
 							KeepIntermediaryFiles = configFile.KeepIntermediaryFiles;
@@ -349,6 +355,7 @@ namespace MiniWebCompiler.ViewModels
 				{
 					FormatterIndentSpaces = 2,
 					SerializeToCamelCaseNames = true,
+					UsingGlobalTypes = false,
 					UseExtensions = false,
 					UseEscapedUnicode = false
 				};
