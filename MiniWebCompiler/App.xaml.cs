@@ -86,6 +86,7 @@ namespace MiniWebCompiler
 				{
 					// I don't care whether you receive my response, I'm exiting anyway
 				}
+				IsSessionEnding = true;   // Don't ask to close now
 				Application.Current.MainWindow.Close();
 			}
 		}
