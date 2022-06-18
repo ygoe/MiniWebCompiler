@@ -42,7 +42,8 @@ Name: startupicon; Description: "Start Mini Web Compiler with Windows"
 [InstallDelete]
 ; First clean up any old files
 Type: filesandordirs; Name: "{app}\node_modules"
-Type: file; Name: "{app}\babel.cmd"
+Type: files; Name: "{app}\babel.cmd"
+Type: files; Name: "{app}\sassc.exe"
 
 [Files]
 Source: "..\MiniWebCompiler\bin\Release\*"; DestDir: "{app}"; Flags: ignoreversion
