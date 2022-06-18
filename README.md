@@ -18,7 +18,8 @@ These are the tools that do the work:
 * [Babel](https://github.com/babel/babel): Transpile modern JavaScript to ECMAScript 5 (deprecated, see warning below)
 * [CSSO](https://github.com/css/csso): Minify CSS
 * [rollup.js](https://github.com/rollup/rollup): Bundle JavaScript modules
-* [Sass](https://sass-lang.com/install): Compile SASS and SCSS to CSS
+* [rollup-plugin-sourcemaps](https://github.com/maxdavidson/rollup-plugin-sourcemaps): Rollup plugin to read input source maps (for bundling bundles)
+* [Sass](https://github.com/sass/dart-sass): Compile SASS and SCSS to CSS
 * [UglifyJS](https://github.com/mishoo/UglifyJS): Minify JavaScript
 
 All these tools are included in the setup package. They are installed locally in the application directory so they won’t interfer with any globally installed NPM packages/tools. The actual versions can be seen in the application’s About dialog.
@@ -29,7 +30,7 @@ JavaScript configuration
 ------------------------
 JavaScript files are run through `rollup` to bundle them into a single file, if any imports of other files are detected in the source file. The bundled code is wrapped into an immediately invoked function expression (IIFE). The parameters of that function and the arguments when calling it can be specified with comment lines like `/* iife-params($) */` and `/* iife-args(jQuery) */` near the top of the file. The code between the parentheses is inserted into the generated file. The comment `/* no-iife */` disables the use of an IIFE and basically concatenates all the files together.
 
-The build output files can be written to a separate directory to keep your source code folder tidy. Use a comment like `/* build-dir(...) */` and anything in the parentheses is the relative path to your build output files. The build directory is created if it doesn’t exist.
+The build output files can be written to a separate directory to keep your source code folder tidy. Use a comment like `/* build-dir(...) */` and anything in the parentheses is the relative path to your build output files. The build directory is created if it doesn’t exist. This configuration also works for CSS files, but note that you cannot use relative `url()` references without manually copying the build file to the correct directory.
 
 JavaScript files are transpiled to ECMAScript 5 if they contain the comment line `/* ecmascript */` near the top of the file. (This is **deprecated** and will be removed in a future version, see the warning above.)
 
@@ -111,12 +112,31 @@ These steps must be taken to use the application from source code and build the 
 * (*) Patch babel-cli as in https://github.com/babel/babel/issues/3940#issuecomment-365911189
 * (*) Install babel-preset-env: `npm install babel-preset-env -g`
 * (*) Install babel-preset-minify: `npm install babel-preset-minify -g`
-* Install csso: `npm install csso-cli -g`
+* Install csso: `npm install csso-cli -g` (See note below)
 * Install rollup: `npm install rollup -g`
+* Install rollup-plugin-sourcemaps: `npm install rollup-plugin-sourcemaps -g`
 * Install uglify-es: `npm install uglify-js -g`
 * Install sass: `npm install sass -g`
 
 The steps marked with (*) are necessary for the deprecated transpiling support. It should be okay to leave them away and just fix any errors related to missing files.
+
+To upgrade all tools to the latest version, run: `npm update -g`
+
+After upgrading the tools, all patches mentioned above must be applied again.
+
+### Latest csso version
+
+The csso-cli package isn’t up-to-date with the current csso library. It contains bugs that have been resolved in csso 5.0. To use the latest version, don’t install the public package as described above, but follow these steps instead:
+
+```
+git clone https://github.com/ygoe/csso-cli.git
+cd csso-cli
+git checkout patch-1
+npm pack
+npm install -g csso-cli-5.0.0.tgz
+```
+
+These steps become obsolete when csso-cli has been updated (see [PR](https://github.com/css/csso-cli/pull/26)).
 
 License
 -------

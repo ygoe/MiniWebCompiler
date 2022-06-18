@@ -201,16 +201,18 @@ namespace MiniWebCompiler.ViewModels
 					MainViewModel.Instance.PlayErrorSound();
 					Views.MainWindow.Instance.SetError(FilePath, LastLog);
 				}
-
-				// Run custom script
-				if (isAnyFileModified || force)
+				else
 				{
-					string scriptFile = "miniwebcompiler.cmd";
-					if (File.Exists(Path.Combine(Project.ProjectPath, scriptFile)))
+					// Run custom script
+					if (isAnyFileModified || force)
 					{
-						await ExecAsync(
-							scriptFile + " \"" + FilePath + "\"",
-							Project.ProjectPath);
+						string scriptFile = "miniwebcompiler.cmd";
+						if (File.Exists(Path.Combine(Project.ProjectPath, scriptFile)))
+						{
+							await ExecAsync(
+								scriptFile + " \"" + FilePath + "\"",
+								Project.ProjectPath);
+						}
 					}
 				}
 			}
@@ -263,7 +265,7 @@ namespace MiniWebCompiler.ViewModels
 			CompressedResultSize = -1;
 
 			await ExecAsync(
-				"csso \"" + cssFileName + "\" --output \"" + minCssFileName + "\" --source-map \"" + minCssFileName + ".map\" --no-restructure",
+				"csso \"" + cssFileName + "\" --output \"" + minCssFileName + "\" --source-map \"" + minCssFileName + ".map\"",
 				fileDir);
 			PostprocessMapFile(minCssFileName + ".map");
 			if (needsRecompile) return;   // Abort this run and restart
@@ -375,7 +377,7 @@ namespace MiniWebCompiler.ViewModels
 				if (!noIife)
 					formatArg = " -f iife";
 				await ExecAsync(
-					"rollup \"" + srcFileName + "\" -o \"" + bundleFileName + "\"" + formatArg + " -m" + banner,
+					"rollup \"" + srcFileName + "\" -o \"" + bundleFileName + "\"" + formatArg + " -m -p rollup-plugin-sourcemaps" + banner,
 					fileDir,
 					utf8: true);
 
@@ -575,7 +577,7 @@ namespace MiniWebCompiler.ViewModels
 			if (Status != false)
 			{
 				await ExecAsync(
-					"csso \"" + cssFileName + "\" --output \"" + minCssFileName + "\" --source-map \"" + minCssFileName + ".map\" --no-restructure",
+					"csso \"" + cssFileName + "\" --output \"" + minCssFileName + "\" --source-map \"" + minCssFileName + ".map\"",
 					fileDir);
 				PostprocessMapFile(minCssFileName + ".map");
 			}

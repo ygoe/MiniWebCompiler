@@ -65,6 +65,7 @@ Source: "{#AppData}\npm\node_modules\csso-cli\*"; DestDir: "{app}\node_modules\c
 
 Source: "{#AppData}\npm\rollup.cmd"; DestDir: "{app}"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "{#AppData}\npm\node_modules\rollup\*"; DestDir: "{app}\node_modules\rollup"; Flags: ignoreversion createallsubdirs recursesubdirs
+Source: "{#AppData}\npm\node_modules\rollup-plugin-sourcemaps\*"; DestDir: "{app}\node_modules\rollup-plugin-sourcemaps"; Flags: ignoreversion createallsubdirs recursesubdirs
 
 Source: "{#AppData}\npm\uglifyjs.cmd"; DestDir: "{app}"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "{#AppData}\npm\node_modules\uglify-js\*"; DestDir: "{app}\node_modules\uglify-js"; Flags: ignoreversion createallsubdirs recursesubdirs
