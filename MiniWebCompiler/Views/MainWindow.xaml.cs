@@ -14,6 +14,8 @@ namespace MiniWebCompiler.Views
 		private readonly System.Drawing.Icon notifyWorkingIcon;
 		private readonly System.Drawing.Icon notifyErrorIcon;
 
+		private bool errorShown;
+
 		#region Constructor
 
 		public MainWindow()
@@ -125,11 +127,14 @@ namespace MiniWebCompiler.Views
 				if (string.IsNullOrEmpty(text))
 					text = "(no message provided)";
 				notifyIcon.ShowBalloonTip(5000, title, text, System.Windows.Forms.ToolTipIcon.Error);
+				errorShown = true;
 			}
-			else
+			else if (errorShown)
 			{
+				// Clear the last error notification (sometimes causes icon flickering, so avoid it)
 				notifyIcon.Visible = false;
 				notifyIcon.Visible = true;
+				errorShown = false;
 			}
 		}
 	}
