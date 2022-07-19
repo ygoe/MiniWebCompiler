@@ -137,6 +137,7 @@ namespace MiniWebCompiler.ViewModels
 			}
 
 			Debug.WriteLine("Begin Compile: " + FilePath);
+			Status = null;
 			isCompiling = true;
 			newError = false;
 			fullFileName = Path.Combine(Project.ProjectPath, FilePath);
