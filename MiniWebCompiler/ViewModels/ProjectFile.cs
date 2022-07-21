@@ -7,6 +7,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows;
 using fastJSON;
 using Unclassified.Util;
 using ViewModelKit;
@@ -33,6 +34,10 @@ namespace MiniWebCompiler.ViewModels
 		public ProjectFile(Project project)
 		{
 			Project = project;
+			if (project.HasBaseline)
+			{
+				CompressedResultSizeBaseline = CompressedResultSize;
+			}
 			compileDc = DelayedCall.Create(async () => await Compile(true), 500);
 		}
 
@@ -95,6 +100,26 @@ namespace MiniWebCompiler.ViewModels
 		{
 			OnPropertyChanged(nameof(CompressedResultSizeStr));
 		}
+
+		public long CompressedResultSizeBaseline { get; set; } = -1;
+
+		public string CompressedResultSizeDiffStr
+		{
+			get
+			{
+				if (CompressedResultSizeBaseline < 0)
+					return "";
+				long diff = CompressedResultSize - CompressedResultSizeBaseline;
+				if (diff < 0)
+					return $"−{-diff:#,##0}";
+				if (diff > 0)
+					return $"+{diff:#,##0}";
+				return $"±0";
+			}
+		}
+
+		public Visibility BaselineSetVisibility =>
+			CompressedResultSizeBaseline >= 0 ? Visibility.Visible : Visibility.Collapsed;
 
 		#endregion Properties
 

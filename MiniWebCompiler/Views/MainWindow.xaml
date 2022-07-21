@@ -4,7 +4,7 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	x:Class="MiniWebCompiler.Views.MainWindow"
 	Title="Mini Web Compiler"
-	Height="300" Width="800"
+	Height="300" Width="900"
 	Cursor="{Binding Cursor}"
 	DataContextChanged="Window_DataContextChanged"
 	StateChanged="Window_StateChanged"
@@ -19,7 +19,7 @@
 			<ColumnDefinition Width="20"/>
 			<ColumnDefinition Width="{Binding FilesListWidth, Mode=TwoWay}"/>
 			<ColumnDefinition Width="20"/>
-			<ColumnDefinition Width="3*"/>
+			<ColumnDefinition Width="*"/>
 		</Grid.ColumnDefinitions>
 
 		<Grid Grid.Column="0">
@@ -120,6 +120,7 @@
 								<ColumnDefinition Width="*"/>
 								<ColumnDefinition Width="Auto"/>
 								<ColumnDefinition Width="Auto" SharedSizeGroup="Size"/>
+								<ColumnDefinition Width="Auto" SharedSizeGroup="SizeDiff"/>
 							</Grid.ColumnDefinitions>
 							<Ellipse Width="10" Height="10" VerticalAlignment="Center">
 								<Ellipse.Style>
@@ -139,6 +140,7 @@
 							<TextBlock Grid.Column="1" Margin="6,0,0,0" Text="{Binding FilePath}"/>
 							<TextBlock Grid.Column="2" Margin="10,0,0,0" Text="{Binding LastCompileTimeStr}" Opacity="0.6" ToolTip="Last compile time"/>
 							<TextBlock Grid.Column="3" HorizontalAlignment="Right" Margin="10,0,0,0" Text="{Binding CompressedResultSizeStr}" Opacity="0.6" ToolTip="GZip-compressed file size"/>
+							<TextBlock Grid.Column="4" HorizontalAlignment="Right" Margin="4,0,0,0" Text="{Binding CompressedResultSizeDiffStr}" Opacity="0.6" ToolTip="Difference to baseline" Visibility="{Binding BaselineSetVisibility}"/>
 						</Grid>
 					</DataTemplate>
 				</ListBox.ItemTemplate>
@@ -151,6 +153,7 @@
 					<Path Margin="0,3" Width="10" Height="10" Fill="Black" Data="M0,4 L10,4 10,6 0,6 z"/>
 				</Button>
 				<Button Margin="6,0,0,0" MinWidth="75" IsEnabled="{Binding IsProjectSelected}" Command="{Binding SelectedProject.CompileAllCommand}">Compile all</Button>
+				<ToggleButton Margin="6,0,0,0" IsEnabled="{Binding IsProjectSelected}" IsChecked="{Binding SelectedProject.HasBaseline}">Baseline</ToggleButton>
 			</StackPanel>
 		</Grid>
 

@@ -27,8 +27,8 @@ namespace MiniWebCompiler.ViewModels
 		{
 			Instance = this;
 
-			ProjectsListWidth = new GridLength(App.Settings?.ProjectsListWidth ?? 100);
-			FilesListWidth = new GridLength(App.Settings?.FilesListWidth ?? 200);
+			ProjectsListWidth = new GridLength(App.Settings?.ProjectsListWidth ?? 150);
+			FilesListWidth = new GridLength(App.Settings?.FilesListWidth ?? 300);
 
 			if (App.Settings != null)
 			{
@@ -82,10 +82,10 @@ namespace MiniWebCompiler.ViewModels
 
 		private void OnProjectsListWidthChanged()
 		{
-			if (App.Settings != null && Views.MainWindow.Instance != null)
+			if (App.Settings != null && MainWindow.Instance != null)
 			{
 				if (ProjectsListWidth.Value < 40) ProjectsListWidth = new GridLength(0);
-				double maxWidth = Views.MainWindow.Instance.Width - 40 - FilesListWidth.Value - 40;
+				double maxWidth = MainWindow.Instance.Width - 40 - FilesListWidth.Value - 40;
 				if (ProjectsListWidth.Value > maxWidth) ProjectsListWidth = new GridLength(maxWidth);
 				App.Settings.ProjectsListWidth = (int)ProjectsListWidth.Value;
 			}
@@ -95,10 +95,10 @@ namespace MiniWebCompiler.ViewModels
 
 		private void OnFilesListWidthChanged()
 		{
-			if (App.Settings != null && Views.MainWindow.Instance != null)
+			if (App.Settings != null && MainWindow.Instance != null)
 			{
 				if (FilesListWidth.Value < 100) FilesListWidth = new GridLength(100);
-				double maxWidth = Views.MainWindow.Instance.Width - 40 - ProjectsListWidth.Value - 40;
+				double maxWidth = MainWindow.Instance.Width - 40 - ProjectsListWidth.Value - 40;
 				if (FilesListWidth.Value > maxWidth) FilesListWidth = new GridLength(maxWidth);
 				App.Settings.FilesListWidth = (int)FilesListWidth.Value;
 			}

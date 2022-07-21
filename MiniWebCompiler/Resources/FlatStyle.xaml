@@ -14,12 +14,14 @@
 	<SolidColorBrush x:Key="FlatDefaultBackground">#f4f4f4</SolidColorBrush>
 	<SolidColorBrush x:Key="FlatHoveredBackground">#fafafa</SolidColorBrush>
 	<SolidColorBrush x:Key="FlatPressedBackground">#e8e8e8</SolidColorBrush>
+	<SolidColorBrush x:Key="FlatCheckedBackground">#a0a0a0</SolidColorBrush>
 	<SolidColorBrush x:Key="FlatDisabledBackground">#ffffff</SolidColorBrush>
 
 	<SolidColorBrush x:Key="FlatDefaultBorder">#b0b0b0</SolidColorBrush>
 	<SolidColorBrush x:Key="FlatHoveredBorder">#808080</SolidColorBrush>
 	<SolidColorBrush x:Key="FlatFocusedBorder">#81b2ff</SolidColorBrush>
 	<SolidColorBrush x:Key="FlatPressedBorder">#808080</SolidColorBrush>
+	<SolidColorBrush x:Key="FlatCheckedBorder">#808080</SolidColorBrush>
 	<SolidColorBrush x:Key="FlatDisabledBorder">#c8c8c8</SolidColorBrush>
 
 	<!-- All colours with lightness - 8 to compensate the circle rendering opacity loss in RadioButton -->
@@ -168,6 +170,11 @@
 			<Trigger Property="IsPressed" Value="True">
 				<Setter Property="Background" Value="{StaticResource FlatPressedBackground}"/>
 				<Setter Property="BorderBrush" Value="{StaticResource FlatPressedBorder}"/>
+			</Trigger>
+			<Trigger Property="IsChecked" Value="True">
+				<Setter Property="Background" Value="{StaticResource FlatCheckedBackground}"/>
+				<Setter Property="BorderBrush" Value="{StaticResource FlatCheckedBorder}"/>
+				<Setter Property="Foreground" Value="#ffffff"/>
 			</Trigger>
 			<Trigger Property="IsEnabled" Value="False">
 				<Setter Property="Background" Value="{StaticResource FlatDisabledBackground}"/>

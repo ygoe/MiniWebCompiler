@@ -208,6 +208,26 @@ namespace MiniWebCompiler.ViewModels
 			}
 		}
 
+		public bool HasBaseline { get; set; }
+
+		private void OnHasBaselineChanged()
+		{
+			if (HasBaseline)
+			{
+				foreach (var file in Files)
+				{
+					file.CompressedResultSizeBaseline = file.CompressedResultSize;
+				}
+			}
+			else
+			{
+				foreach (var file in Files)
+				{
+					file.CompressedResultSizeBaseline = -1;
+				}
+			}
+		}
+
 		#endregion Commands
 
 		#region Status handling
