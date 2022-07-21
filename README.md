@@ -105,27 +105,13 @@ These steps must be taken to use the application from source code and build the 
 **Note:** None of this applies when installing Mini Web Compiler from the setup package.
 
 * Install Node.js for Windows from https://nodejs.org
-* Install csso: `npm install csso-cli -g` (See note below)
+* Install csso: `npm install csso-cli -g`
 * Install rollup: `npm install rollup -g`
 * Install rollup-plugin-sourcemaps: `npm install rollup-plugin-sourcemaps -g`
 * Install uglify-es: `npm install uglify-js -g`
 * Install sass: `npm install sass -g`
 
 To upgrade all tools to the latest version, run: `npm update -g`
-
-### Latest csso version
-
-The csso-cli package isn’t up-to-date with the current csso library. It contains bugs that have been resolved in csso 5.0. To use the latest version, don’t install the public package as described above, but follow these steps instead:
-
-```
-git clone https://github.com/ygoe/csso-cli.git
-cd csso-cli
-git checkout patch-1
-npm pack
-npm install -g csso-cli-5.0.0.tgz
-```
-
-These steps become obsolete when csso-cli has been updated (see [PR](https://github.com/css/csso-cli/pull/26)).
 
 License
 -------
