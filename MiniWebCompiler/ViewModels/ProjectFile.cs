@@ -75,16 +75,25 @@ namespace MiniWebCompiler.ViewModels
 			{
 				if (CompressedResultSize < 0)
 					return "";
-				if (CompressedResultSize < 1024)
-					return $"{CompressedResultSize} B";
+				if (CompressedResultSize < 1024 || App.Settings.FileSizesInBytes)
+					return $"{CompressedResultSize:#,##0} B";
 				if (CompressedResultSize < 1024 * 10)
+					return $"{(double)CompressedResultSize / 1024:0.00} KiB";
+				if (CompressedResultSize < 1024 * 100)
 					return $"{(double)CompressedResultSize / 1024:0.0} KiB";
 				if (CompressedResultSize < 1024 * 1024)
 					return $"{(double)CompressedResultSize / 1024:0} KiB";
 				if (CompressedResultSize < 1024 * 1024 * 10)
+					return $"{(double)CompressedResultSize / 1024 / 1024:0.00} MiB";
+				if (CompressedResultSize < 1024 * 1024 * 100)
 					return $"{(double)CompressedResultSize / 1024 / 1024:0.0} MiB";
 				return $"{(double)CompressedResultSize / 1024 / 1024:0} MiB";
 			}
+		}
+
+		public void UpdateCompressedResultSizeStr()
+		{
+			OnPropertyChanged(nameof(CompressedResultSizeStr));
 		}
 
 		#endregion Properties

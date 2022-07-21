@@ -42,6 +42,22 @@ namespace MiniWebCompiler.ViewModels
 				}
 				SortProjects();
 				UpdateStatus();
+
+				App.Settings.PropertyChanged += Settings_PropertyChanged;
+			}
+		}
+
+		private void Settings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs args)
+		{
+			if (args.PropertyName == nameof(IAppSettings.FileSizesInBytes))
+			{
+				foreach (var project in Projects)
+				{
+					foreach (var projectFile in project.Files)
+					{
+						projectFile.UpdateCompressedResultSizeStr();
+					}
+				}
 			}
 		}
 

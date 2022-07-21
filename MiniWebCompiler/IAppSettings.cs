@@ -66,5 +66,11 @@ namespace MiniWebCompiler
 		/// Gets or sets the default value of the KeepUnminifiedFiles property for new projects.
 		/// </summary>
 		bool KeepUnminifiedFilesDefault { get; set; }
+
+		/// <summary>
+		/// Gets or sets a value indicating whether the compressed file sizes are displayed in bytes
+		/// instead of B/KiB/MiB.
+		/// </summary>
+		bool FileSizesInBytes { get; set; }
 	}
 }

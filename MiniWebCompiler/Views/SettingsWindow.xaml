@@ -18,6 +18,7 @@
 			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
 		</Grid.RowDefinitions>
 
 		<CheckBox Grid.Row="0" IsChecked="{Binding Settings.AskOnWindowClose}" Content="Ask on window close"/>
@@ -30,6 +31,8 @@
 
 		<CheckBox Grid.Row="4" Margin="0,2,0,0" IsChecked="{Binding Settings.KeepUnminifiedFilesDefault}" Content="Keep unminified files default"/>
 
-		<Button Grid.Row="5" Margin="0,20,0,0" HorizontalAlignment="Right" MinWidth="75" Content="Close" Click="CloseButton_Click"/>
+		<CheckBox Grid.Row="5" Margin="0,2,0,0" IsChecked="{Binding Settings.FileSizesInBytes}" Content="Always display file sizes in bytes"/>
+
+		<Button Grid.Row="6" Margin="0,20,0,0" HorizontalAlignment="Right" MinWidth="75" Content="Close" Click="CloseButton_Click"/>
 	</Grid>
 </Window>
