@@ -23,6 +23,7 @@ namespace MiniWebCompiler.ViewModels
 		private bool newError;
 		private string fullFileName;
 		private string fileDir;
+		private string fullOutputFileName;
 		private bool isAnyFileModified;
 		private bool isCompiling;
 		private bool needsRecompile;
@@ -253,6 +254,39 @@ namespace MiniWebCompiler.ViewModels
 			}
 		}
 
+		public async Task Unminify()
+		{
+			if (isCompiling || Status != true)
+			{
+				return;
+			}
+
+			if (File.Exists(fullFileName))
+			{
+				try
+				{
+					switch (Path.GetExtension(fullFileName))
+					{
+						case ".js":
+							await UnminifyJavaScript();
+							break;
+						default:
+							return;
+					}
+				}
+				catch (Exception ex)
+				{
+					LastLog += (!string.IsNullOrEmpty(LastLog) ? "\n\n" : "") +
+						"Exception while unminifying\n\n" + ex.ToString();
+				}
+			}
+			else
+			{
+				LastLog += (!string.IsNullOrEmpty(LastLog) ? "\n\n" : "") +
+					"Compiled file not found: " + fullFileName;
+			}
+		}
+
 		#endregion Public methods
 
 		#region Compiling
@@ -266,7 +300,7 @@ namespace MiniWebCompiler.ViewModels
 			using (var reader = new StreamReader(fullFileName))
 			{
 				int lineNumber = 0;
-				while (!reader.EndOfStream && lineNumber < 10)
+				while (!reader.EndOfStream && lineNumber < 20)
 				{
 					string line = reader.ReadLine();
 					lineNumber++;
@@ -285,6 +319,7 @@ namespace MiniWebCompiler.ViewModels
 					}
 				}
 			}
+			fullOutputFileName = minCssFileName;
 
 			if (!force && AreFilesUpToDate(minCssFileName, minCssFileName + ".map"))
 			{
@@ -337,11 +372,14 @@ namespace MiniWebCompiler.ViewModels
 			string iifeParams = "";
 			string iifeArgs = "";
 			bool noIife = false;
+			bool mangle = true;
+			bool keepFargs = false;
+			bool keepFnames = false;
 			string buildDir = "";
 			using (var reader = new StreamReader(fullFileName))
 			{
 				int lineNumber = 0;
-				while (!reader.EndOfStream && lineNumber < 10)
+				while (!reader.EndOfStream && lineNumber < 20)
 				{
 					string line = reader.ReadLine();
 					lineNumber++;
@@ -366,6 +404,21 @@ namespace MiniWebCompiler.ViewModels
 					{
 						noIife = true;
 					}
+					match = Regex.Match(line, @"^\s*/\*\s*no-mangle\s*\*/", RegexOptions.IgnoreCase);
+					if (match.Success)
+					{
+						mangle = false;
+					}
+					match = Regex.Match(line, @"^\s*/\*\s*keep-fargs\s*\*/", RegexOptions.IgnoreCase);
+					if (match.Success)
+					{
+						keepFargs = true;
+					}
+					match = Regex.Match(line, @"^\s*/\*\s*keep-fnames\s*\*/", RegexOptions.IgnoreCase);
+					if (match.Success)
+					{
+						keepFnames = true;
+					}
 					match = Regex.Match(line, @"^\s*/\*\s*build-dir\((.*)\)\s*\*/", RegexOptions.IgnoreCase);
 					if (match.Success && buildDir == "")
 					{
@@ -384,6 +437,7 @@ namespace MiniWebCompiler.ViewModels
 					}
 				}
 			}
+			fullOutputFileName = minFileName;
 
 			if (!force && AreFilesUpToDate(minFileName, minFileName + ".map"))
 			{
@@ -440,15 +494,21 @@ namespace MiniWebCompiler.ViewModels
 
 			if (Status != false)
 			{
-				string mapParam = "--source-map \"url='" + onlyMinFileName.Replace('\\', '/') + ".map'\"";
+				string mangleParam = mangle ? " --mangle" : "";
+				string mapParam = " --source-map \"url='" + onlyMinFileName.Replace('\\', '/') + ".map'\"";
 				if (File.Exists(Path.Combine(fileDir, bundleFileName) + ".map"))
 				{
 					// The url part must refer to the file without the build directory because
 					// both files (min.js and map) will be in the same directory.
-					mapParam = "--source-map \"content='" + bundleFileName.Replace('\\', '/') + ".map',url='" + onlyMinFileName.Replace('\\', '/') + ".map'\"";
+					mapParam = " --source-map \"content='" + bundleFileName.Replace('\\', '/') + ".map',url='" + onlyMinFileName.Replace('\\', '/') + ".map'\"";
 				}
+				string addParams = "";
+				if (keepFargs)
+					addParams += " --keep-fargs";
+				if (keepFnames)
+					addParams += " --keep-fnames";
 				await ExecAsync(
-					"uglifyjs " + bundleFileName + " --compress --mangle --output \"" + minFileName + "\" --comments \"/^!/\" " + mapParam,
+					"uglifyjs " + bundleFileName + " --compress" + mangleParam + " --output \"" + minFileName + "\" --comments \"/^!/\"" + mapParam + addParams,
 					fileDir,
 					utf8: true);
 
@@ -499,7 +559,7 @@ namespace MiniWebCompiler.ViewModels
 			using (var reader = new StreamReader(fullFileName))
 			{
 				int lineNumber = 0;
-				while (!reader.EndOfStream && lineNumber < 10)
+				while (!reader.EndOfStream && lineNumber < 20)
 				{
 					string line = reader.ReadLine();
 					lineNumber++;
@@ -519,6 +579,7 @@ namespace MiniWebCompiler.ViewModels
 					}
 				}
 			}
+			fullOutputFileName = minCssFileName;
 
 			if (!force && AreFilesUpToDate(minCssFileName, minCssFileName + ".map"))
 			{
@@ -618,6 +679,29 @@ namespace MiniWebCompiler.ViewModels
 		}
 
 		#endregion Compiling
+
+		#region Unminifying
+
+		private async Task UnminifyJavaScript()
+		{
+			string unminifiedFileName = Regex.Replace(fullOutputFileName, @"\.min\.js$", ".unmin.js");
+
+			//string mapParam = " --source-map \"url='" + unminifiedFileName.Replace('\\', '/') + ".map'\"";
+			string mapParam = "";
+			if (File.Exists(Path.Combine(fileDir, fullOutputFileName) + ".map"))
+			{
+				//mapParam = " --source-map \"content='" + fullOutputFileName.Replace('\\', '/') + ".map',url='" + unminifiedFileName.Replace('\\', '/') + ".map'\"";
+				mapParam = " --source-map \"content='" + fullOutputFileName.Replace('\\', '/') + ".map'\"";
+			}
+			await ExecAsync(
+				"uglifyjs " + fullOutputFileName + " --beautify --output \"" + unminifiedFileName + "\"" + mapParam,
+				fileDir,
+				utf8: true);
+
+			PostprocessMapFile(unminifiedFileName + ".map");
+		}
+
+		#endregion Unminifying
 
 		#region Process helper methods
 

@@ -154,6 +154,7 @@
 				</Button>
 				<Button Margin="6,0,0,0" MinWidth="75" IsEnabled="{Binding IsProjectSelected}" Command="{Binding SelectedProject.CompileAllCommand}">Compile all</Button>
 				<ToggleButton Margin="6,0,0,0" IsEnabled="{Binding IsProjectSelected}" IsChecked="{Binding SelectedProject.HasBaseline}">Baseline</ToggleButton>
+				<Button Margin="6,0,0,0" IsEnabled="{Binding SelectedProject.IsJavaScriptSelected}" Command="{Binding SelectedProject.UnminifyCommand}">Unminify</Button>
 			</StackPanel>
 		</Grid>
 

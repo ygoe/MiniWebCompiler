@@ -29,6 +29,8 @@ JavaScript configuration
 ------------------------
 JavaScript files are run through `rollup` to bundle them into a single file, if any imports of other files are detected in the source file. The bundled code is wrapped into an immediately invoked function expression (IIFE). The parameters of that function and the arguments when calling it can be specified with comment lines like `/* iife-params($) */` and `/* iife-args(jQuery) */` near the top of the file. The code between the parentheses is inserted into the generated file. The comment `/* no-iife */` disables the use of an IIFE and basically concatenates all the files together.
 
+JavaScript mangling by `uglify-js` can be configured with the following comments: `/* no-mangle */` disables mangling completely (nothing is renamed), `/* keep-fnames */` disables renaming functions, `/* keep-fargs */` disables renaming function arguments (parameter names). These options can be used together with the “Unminify” command to debug compressing or mangling errors in your JavaScript code. It will take the .min.js file and beautify it into a .unmin.js file in the same (output) directory.
+
 The build output files can be written to a separate directory to keep your source code folder tidy. Use a comment like `/* build-dir(...) */` and anything in the parentheses is the relative path to your build output files. The build directory is created if it doesn’t exist. This configuration also works for CSS files, but note that you cannot use relative `url()` references without manually copying the build file to the correct directory.
 
 ### Example

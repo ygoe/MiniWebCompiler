@@ -128,6 +128,8 @@ namespace MiniWebCompiler.ViewModels
 
 		public ProjectFile SelectedFile { get; set; }
 
+		public bool IsJavaScriptSelected => SelectedFile?.FilePath.EndsWith(".js") ?? false;
+
 		public bool? Status { get; private set; } = true;
 
 		#endregion Properties
@@ -226,6 +228,13 @@ namespace MiniWebCompiler.ViewModels
 					file.CompressedResultSizeBaseline = -1;
 				}
 			}
+		}
+
+		public DelegateCommand UnminifyCommand { get; }
+
+		private async void OnUnminify()
+		{
+			await SelectedFile?.Unminify();
 		}
 
 		#endregion Commands
