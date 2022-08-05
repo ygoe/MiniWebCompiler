@@ -38,11 +38,18 @@ namespace MiniWebCompiler
 				Environment.Exit(1);
 			}
 
-			var app = new App();
-			app.InitializeComponent();
-			app.Run();
-
-			return 0;
+			try
+			{
+				var app = new App();
+				app.InitializeComponent();
+				app.Run();
+				return 0;
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show("An unexpected error has occurred.\n" + ex.ToString(), "Mini Web Compiler Error", MessageBoxButton.OK, MessageBoxImage.Error);
+				return 1;
+			}
 		}
 
 		private static async Task<int> CloseRunningInstance()
