@@ -499,6 +499,7 @@ namespace MiniWebCompiler.ViewModels
 							break;
 						}
 					}
+					LastLog += Environment.NewLine + "● Adding IIFE parameters and arguments" + Environment.NewLine;
 					File.WriteAllLines(Path.Combine(fileDir, bundleFileName), lines);
 				}
 			}
@@ -661,6 +662,8 @@ namespace MiniWebCompiler.ViewModels
 			string json = File.ReadAllText(fileName);
 			if (!(JSON.Parse(json) is Dictionary<string, object> dict))
 				return;   // Unexpected JSON structure
+
+			LastLog += Environment.NewLine + "● Modifying source map: relative paths, remove sources" + Environment.NewLine;
 
 			// Convert absolute paths to relative paths
 			if (dict["sources"] is List<object> sources)
