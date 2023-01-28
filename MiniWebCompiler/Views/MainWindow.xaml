@@ -57,7 +57,7 @@
 									</Style>
 								</Ellipse.Style>
 							</Ellipse>
-							<TextBlock Grid.Column="1" Margin="6,0,0,0" Text="{Binding Name}"/>
+							<TextBlock Grid.Column="1" Margin="6,0,0,0" Text="{Binding Name}" TextDecorations="{Binding TextDecorations}"/>
 						</Grid>
 					</DataTemplate>
 				</ListBox.ItemTemplate>

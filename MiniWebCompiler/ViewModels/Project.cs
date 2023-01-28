@@ -21,8 +21,11 @@ namespace MiniWebCompiler.ViewModels
 
 		public const string ProjectFileName = "miniwebcompiler.json";
 
-		private readonly bool isLoaded;
 		private readonly DispatcherTimer updateTimeTimer;
+		private readonly DelayedCall reloadDc;
+
+		private bool isLoading;
+		private string projectFileName;
 		private FileSystemWatcher watcher;
 
 		#endregion Private data
@@ -31,10 +34,10 @@ namespace MiniWebCompiler.ViewModels
 
 		public Project(string projectPath)
 		{
+			reloadDc = DelayedCall.Create(() => Reload(), 500);
+
 			ProjectPath = projectPath;
-			Name = Path.GetFileName(projectPath);
 			LoadFromFile();
-			isLoaded = true;
 
 			updateTimeTimer = new DispatcherTimer();
 			updateTimeTimer.Tick += UpdateTimeTimerOnTick;
@@ -60,11 +63,15 @@ namespace MiniWebCompiler.ViewModels
 
 		private void OnNameChanged()
 		{
-			if (isLoaded)
+			if (!isLoading)
 			{
 				SaveToFile();
 			}
 		}
+
+		public bool IsDeleted { get; set; }
+
+		public TextDecorationCollection TextDecorations => IsDeleted ? System.Windows.TextDecorations.Strikethrough : null;
 
 		public string ProjectPath { get; set; }
 
@@ -81,6 +88,7 @@ namespace MiniWebCompiler.ViewModels
 				watcher.Changed += Watcher_Changed;
 				watcher.Created += Watcher_Changed;
 				watcher.Renamed += Watcher_Changed;
+				watcher.Deleted += Watcher_Changed;
 				watcher.IncludeSubdirectories = true;
 				watcher.EnableRaisingEvents = true;
 			}
@@ -94,11 +102,24 @@ namespace MiniWebCompiler.ViewModels
 			}
 			else
 			{
-				foreach (var file in Files)
+				if (PathUtil.PathEquals(args.FullPath, projectFileName))
 				{
-					if (file.MatchesFile(args.FullPath))
+					reloadDc.Reset();
+				}
+				else if (args.ChangeType == WatcherChangeTypes.Renamed &&
+					args is RenamedEventArgs renamedArgs &&
+					PathUtil.PathEquals(renamedArgs.OldFullPath, projectFileName))
+				{
+					reloadDc.Reset();
+				}
+				else
+				{
+					foreach (var file in Files)
 					{
-						file.ScheduleCompile();
+						if (file.MatchesFile(args.FullPath))
+						{
+							file.ScheduleCompile();
+						}
 					}
 				}
 			}
@@ -108,7 +129,7 @@ namespace MiniWebCompiler.ViewModels
 
 		private void OnKeepIntermediaryFilesChanged()
 		{
-			if (isLoaded)
+			if (!isLoading)
 			{
 				SaveToFile();
 			}
@@ -118,7 +139,7 @@ namespace MiniWebCompiler.ViewModels
 
 		private void OnKeepUnminifiedFilesChanged()
 		{
-			if (isLoaded)
+			if (!isLoading)
 			{
 				SaveToFile();
 			}
@@ -272,13 +293,16 @@ namespace MiniWebCompiler.ViewModels
 
 		private void LoadFromFile()
 		{
-			string projectFileName = Path.Combine(ProjectPath, ProjectFileName);
+			projectFileName = Path.Combine(ProjectPath, ProjectFileName);
+			isLoading = true;
 			try
 			{
+				Name = Path.GetFileName(ProjectPath);
 				KeepUnminifiedFiles = App.Settings.KeepUnminifiedFilesDefault;
 
 				if (File.Exists(projectFileName))
 				{
+					IsDeleted = false;
 					Name = "";
 					Files.Clear();
 
@@ -357,11 +381,28 @@ namespace MiniWebCompiler.ViewModels
 						}
 					}
 				}
+				else
+				{
+					IsDeleted = true;
+					KeepUnminifiedFiles = false;
+					KeepIntermediaryFiles = false;
+					Files.Clear();
+				}
 			}
 			catch (Exception ex)
 			{
 				MessageBox.Show("The project file \"" + projectFileName + "\" could not be loaded. " + ex.Message, App.Name, MessageBoxButton.OK, MessageBoxImage.Error);
 			}
+			finally
+			{
+				isLoading = false;
+			}
+		}
+
+		private void Reload()
+		{
+			LoadFromFile();
+			InitializeAsync();
 		}
 
 		private void SaveToFile()
