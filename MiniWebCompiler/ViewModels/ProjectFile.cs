@@ -435,7 +435,19 @@ namespace MiniWebCompiler.ViewModels
 							Directory.CreateDirectory(Path.Combine(fileDir, buildDir));
 						}
 					}
+					match = Regex.Match(line, @"^\s*/\*\s*no-bundle-suffix\s*\*/", RegexOptions.IgnoreCase);
+					if (match.Success)
+					{
+						bundleFileName = Regex.Replace(bundleFileName, @"\.bundle\.js$", ".js");
+					}
 				}
+			}
+			bool restoredBundleSuffix = false;
+			if (bundleFileName == srcFileName)
+			{
+				// no-bundle-suffix without the build-dir option: this would overwrite the source file
+				bundleFileName = Regex.Replace(bundleFileName, @"\.js$", ".bundle.js");
+				restoredBundleSuffix = true;
 			}
 			fullOutputFileName = minFileName;
 
@@ -450,6 +462,10 @@ namespace MiniWebCompiler.ViewModels
 			SaveResultFileTime(minFileName);
 			SaveResultFileTime(minFileName + ".map");
 			LastLog = "";
+			if (restoredBundleSuffix)
+			{
+				LastLog += "Warning: Not removing .bundle.js suffix because it would overwrite the source file." + Environment.NewLine + Environment.NewLine;
+			}
 
 			if (AdditionalSourceFiles.Any())
 			{
